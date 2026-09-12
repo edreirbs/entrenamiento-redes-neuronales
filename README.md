@@ -21,6 +21,28 @@ ganas tú.
 El remate no es "la mosca es mejor" ni al revés: cada arquitectura está resuelta
 para un problema distinto.
 
+## La mosca aprende entre partidas
+
+En dos direcciones opuestas, y sólo una de ellas es "mejorar". Todo se guarda en
+el `localStorage` de quien juega y no sale de ahí.
+
+**Habituación (ronda 1): se vuelve más lenta.** Ante estímulos de aproximación
+repetidos, las sinapsis de LPLC2 y LC4 que convergen sobre DNp01 se deprimen. Es
+aprendizaje no asociativo y está documentado en el animal. Medido en el
+navegador: una mosca descansada salta a 206–235 ms; completamente habituada, a
+241–262 ms. Esos ~30 ms son justo la diferencia entre imposible y ganable para un
+humano. Se recupera con el descanso (τ = 10 min), así que si dejas la página un
+rato la encuentras fresca.
+
+**Consolidación (ronda 2): recuerda un poco más.** Entrenar repetido alarga la
+constante de olvido del cuerpo fungiforme, de 1100 ms hacia 1330 ms de forma
+saturante. Eso lleva su acierto a un solo terrón de ~37 % a ~85 % tras unas doce
+partidas. Que la consolidación exista está documentado; **la curva concreta de
+esta página es nuestra, no una medición**, y así se dice en la propia página.
+
+El orden de una secuencia no lo aprende nunca: el cuerpo fungiforme asocia clave
+con valor, no posiciones con tiempos.
+
 ## Lo que es real y lo que no
 
 **Real: la arquitectura.** Las poblaciones (fotorreceptores, lámina, T5, LPLC2,
@@ -75,6 +97,7 @@ src/circuits.js       los tres circuitos: escape, olfativo, cuerpo fungiforme
 src/fly3d.js          la mosca por geometría, con el circuito dentro de la cabeza
 src/scene3d.js        mesa, luces, matamoscas y terrones
 src/main.js           las dos rondas
+src/learning.js       lo que se lleva de una partida a la siguiente
 src/rounds/plume.js   ronda descartada, sin conectar (ver arriba)
 ```
 

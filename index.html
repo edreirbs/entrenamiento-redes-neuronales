@@ -21,6 +21,12 @@
 <div class="num num-f" id="numF"></div>
 
 <div class="cue" id="cue"></div>
+<div class="controls" id="controls"></div>
+
+<div class="learn" id="learn" hidden>
+  <div class="lrow"><span>escape habituado</span><i><b id="barHab"></b></i></div>
+  <div class="lrow"><span>memoria consolidada</span><i><b id="barMem"></b></i></div>
+</div>
 
 <div class="veil" id="veil">
   <div class="panel" id="panel"></div>
@@ -37,14 +43,26 @@
   <p><b>Nuestro:</b> la dinámica. Un conectoma es anatomía estática y no dice la
   fuerza de cada sinapsis, así que esos parámetros los ajustamos hasta que el
   circuito se comportara como el animal.</p>
-  <p><b>Nada está entrenado.</b> No hay backpropagation ni datos de
-  entrenamiento. La conducta sale del cableado.</p>
+  <p><b>Nada está entrenado de fábrica.</b> No hay backpropagation ni datos de
+  entrenamiento: la conducta sale del cableado.</p>
+  <p><b>Pero sí aprende mientras juegas, en dos direcciones opuestas.</b>
+  En la ronda 1 <i>habitúa</i>: ante estímulos de aproximación repetidos, las
+  sinapsis que convergen sobre la neurona gigante se deprimen y tarda más en
+  saltar. Eso está documentado en el animal, y se recupera con el descanso — si
+  dejas la página un rato, la vuelves a encontrar fresca. En la ronda 2
+  <i>consolida</i>: entrenar repetido hace que la huella tarde más en decaer.
+  Que la consolidación exista está documentado; la curva concreta de esta
+  página es nuestra, no una medición.</p>
+  <p style="color:#6e7688">Lo aprendido se guarda sólo en tu navegador.</p>
   <p class="links">
     <a href="https://github.com/edreirbs/entrenamiento-redes-neuronales" target="_blank" rel="noopener">Código</a>
     <a href="https://flywire.ai" target="_blank" rel="noopener">FlyWire</a>
     <a href="https://www.nature.com/articles/s41586-024-07763-9" target="_blank" rel="noopener">Nature 2024</a>
   </p>
-  <button id="closeAbout">Cerrar</button>
+  <div class="dlgbtns">
+    <button id="closeAbout">Cerrar</button>
+    <button id="forget" class="ghost">Que la mosca olvide todo</button>
+  </div>
 </dialog>
 
 <script type="module" src="src/main.js"></script>

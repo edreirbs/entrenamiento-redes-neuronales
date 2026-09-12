@@ -146,7 +146,32 @@ export function buildEscapeCircuit() {
 
   const params = L.materialize();
   const net = new LIFNet(L.n, buildCSR(L.n, e), { ...params, noise: 0.003 });
-  return { net, layout: L, nSyn: e.length };
+
+  // Índices de las sinapsis que convergen sobre la neurona gigante. La
+  // habituación del escape en la mosca es una depresión de justo estas
+  // sinapsis: ante estímulos de aproximación repetidos, dejan de empujar
+  // igual y el animal tarda más en saltar (o deja de saltar).
+  const { indptr, indices, weights } = net.csr;
+  const gfPop = L.pops.DNp01;
+  const conv = [];
+  for (const name of ['LPLC2', 'LC4']) {
+    const p = L.pops[name];
+    for (let pre = p.start; pre < p.end; pre++) {
+      for (let k = indptr[pre]; k < indptr[pre + 1]; k++) {
+        if (indices[k] >= gfPop.start && indices[k] < gfPop.end) conv.push([k, weights[k]]);
+      }
+    }
+  }
+
+  const circuit = {
+    net, layout: L, nSyn: e.length, habituation: 0,
+    /** @param {number} h 0 = descansada, 1 = totalmente habituada */
+    setHabituation(h) {
+      this.habituation = Math.max(0, Math.min(1, h));
+      for (const [k, base] of conv) weights[k] = base * (1 - 0.92 * this.habituation);
+    },
+  };
+  return circuit;
 }
 
 /**
@@ -368,6 +393,8 @@ export function buildMemoryCircuit(rng = Math.random, opts = {}) {
     /** Pesos plásticos KC → MBON de aproximación. Empiezan en cero. */
     w: new Float32Array(N_KC),
     tauMem: opts.tauMem ?? 1100,
+    gain: opts.gain ?? 0.05,
+    wCap: opts.wCap ?? 0.30,
   };
 }
 
@@ -388,7 +415,7 @@ export function memoryStep(mb, dt, I, dopamine) {
     for (const i of fired) {
       if (i >= kc.start && i < kc.end) {
         const k = i - kc.start;
-        w[k] = Math.min(0.30, w[k] + 0.05 * dopamine);
+        w[k] = Math.min(mb.wCap, w[k] + mb.gain * dopamine);
       }
     }
   }
