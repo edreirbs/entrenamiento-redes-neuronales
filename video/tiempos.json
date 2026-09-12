@@ -1,103 +1,110 @@
 {
-  "total": 110.374,
+  "total": 117.444,
   "lineas": [
     {
       "id": "01",
       "escena": "gancho",
       "texto": "¿Alguna vez le has tirado un manotazo a una mosca, y has fallado? No es mala suerte.",
       "inicio": 0.0,
-      "dur": 6.573
+      "dur": 6.549
     },
     {
       "id": "02",
       "escena": "gancho",
       "texto": "Es que su cerebro está hecho exactamente para eso.",
-      "inicio": 6.933,
-      "dur": 2.926
+      "inicio": 6.909,
+      "dur": 2.821
     },
     {
       "id": "03",
-      "escena": "juego",
-      "texto": "Hace poco unos científicos mapearon el cerebro completo de una mosca, neurona por neurona. Con ese mapa hicimos un juego: tú contra ella.",
-      "inicio": 10.218,
-      "dur": 9.417
+      "escena": "mapeo",
+      "texto": "En dos mil veinticuatro, un consorcio liderado por Princeton publicó el mapa completo del cerebro de una mosca: ciento treinta y nueve mil neuronas, cincuenta millones de conexiones.",
+      "inicio": 10.091,
+      "dur": 11.389
     },
     {
       "id": "04",
-      "escena": "vivo",
-      "texto": "Y la mosca no está animada. Su cerebro está corriendo de verdad dentro de tu navegador: mil cuatrocientas neuronas, conectadas igual que en el animal.",
-      "inicio": 19.995,
-      "dur": 9.765
+      "escena": "juego",
+      "texto": "Salió en Nature, es gratis, y con él hicimos un juego: tú contra ella.",
+      "inicio": 21.84,
+      "dur": 4.946
     },
     {
       "id": "05",
-      "escena": "ve",
-      "texto": "Cuando tú ves caer el matamoscas, ella también lo ve. La sombra crece sobre sus ojos, y una señal sale disparada por su cabeza.",
-      "inicio": 30.121,
-      "dur": 8.511
+      "escena": "vivo",
+      "texto": "Y la mosca no está animada. Su cerebro está corriendo de verdad dentro de tu navegador: mil cuatrocientas neuronas, conectadas igual que en el animal.",
+      "inicio": 27.146,
+      "dur": 9.905
     },
     {
       "id": "06",
-      "escena": "gigante",
-      "texto": "Al final de ese camino hay una sola neurona, la más gruesa de todo su cerebro. Le dicen la neurona gigante.",
-      "inicio": 38.992,
-      "dur": 7.292
+      "escena": "ve",
+      "texto": "Cuando tú ves caer el matamoscas, ella también lo ve. La sombra crece sobre sus ojos, y una señal sale disparada por su cabeza.",
+      "inicio": 37.411,
+      "dur": 8.337
     },
     {
       "id": "07",
       "escena": "gigante",
-      "texto": "Cuando se enciende, la mosca salta. Del ojo al músculo hay cinco pasos. Cinco. Por eso te gana.",
-      "inicio": 46.645,
-      "dur": 7.597
+      "texto": "Al final de ese camino hay una sola neurona, la más gruesa de todo su cerebro. Le dicen la neurona gigante.",
+      "inicio": 46.108,
+      "dur": 7.176
     },
     {
       "id": "08",
-      "escena": "aprende",
-      "texto": "Pero aquí viene lo bueno: aprende. Cada manotazo que le tiras le afina un poco la vía de escape.",
-      "inicio": 54.602,
-      "dur": 7.606
+      "escena": "gigante",
+      "texto": "Cuando se enciende, la mosca salta. Del ojo al músculo hay cinco pasos. Cinco. Por eso te gana.",
+      "inicio": 53.644,
+      "dur": 7.562
     },
     {
       "id": "09",
       "escena": "aprende",
-      "texto": "Reacciona antes, y cambia a un salto de emergencia tres veces más rápido que el normal.",
-      "inicio": 62.568,
-      "dur": 5.666
+      "texto": "Pero aquí viene lo bueno: aprende. Cada manotazo que le tiras le afina un poco la vía de escape.",
+      "inicio": 61.566,
+      "dur": 7.478
     },
     {
       "id": "10",
-      "escena": "generaciones",
-      "texto": "Las primeras las aplastas fácil. Para la novena, ya no la alcanzas. Y el que le enseñó fuiste tú.",
-      "inicio": 68.593,
-      "dur": 7.329
+      "escena": "aprende",
+      "texto": "Reacciona antes, y cambia a un salto de emergencia tres veces más rápido que el normal.",
+      "inicio": 69.405,
+      "dur": 5.909
     },
     {
       "id": "11",
-      "escena": "cansarla",
-      "texto": "Tu única salida es cansarla. Golpes seguidos agotan esa vía y la vuelven lenta otra vez. Pero se recupera en dos segundos, así que hay que insistir.",
-      "inicio": 76.282,
-      "dur": 9.987
+      "escena": "generaciones",
+      "texto": "Las primeras las aplastas fácil. Para la novena, ya no la alcanzas. Y el que le enseñó fuiste tú.",
+      "inicio": 75.674,
+      "dur": 7.363
     },
     {
       "id": "12",
-      "escena": "honesto",
-      "texto": "Y una aclaración que importa: aquí nadie entrenó a la mosca con datos. No hay una inteligencia artificial aprendiendo de ejemplos.",
-      "inicio": 86.629,
-      "dur": 8.813
+      "escena": "cansarla",
+      "texto": "Tu única salida es cansarla. Golpes seguidos agotan esa vía y la vuelven lenta otra vez. Pero se recupera en dos segundos, así que hay que insistir.",
+      "inicio": 83.397,
+      "dur": 9.929
     },
     {
       "id": "13",
       "escena": "honesto",
-      "texto": "Lo que hay son neuronas conectadas, y unas cuantas sinapsis que se fortalecen con el susto. Igual que en el bicho de verdad.",
-      "inicio": 95.802,
-      "dur": 7.559
+      "texto": "Y una aclaración que importa: aquí nadie entrenó a la mosca con datos. No hay una inteligencia artificial aprendiendo de ejemplos.",
+      "inicio": 93.687,
+      "dur": 8.883
     },
     {
       "id": "14",
+      "escena": "honesto",
+      "texto": "Lo que hay son neuronas conectadas, y unas cuantas sinapsis que se fortalecen con el susto. Igual que en el bicho de verdad.",
+      "inicio": 102.93,
+      "dur": 7.571
+    },
+    {
+      "id": "15",
       "escena": "cierre",
       "texto": "Entra, tírale un manotazo, y cuenta cuántas veces le ganas antes de que empiece a ganarte ella.",
-      "inicio": 103.722,
-      "dur": 6.653
+      "inicio": 110.861,
+      "dur": 6.583
     }
   ]
 }

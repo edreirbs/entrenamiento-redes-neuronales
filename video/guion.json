@@ -15,61 +15,66 @@
     },
     {
       "id": "03",
-      "escena": "juego",
-      "texto": "Hace poco unos científicos mapearon el cerebro completo de una mosca, neurona por neurona. Con ese mapa hicimos un juego: tú contra ella."
+      "escena": "mapeo",
+      "texto": "En dos mil veinticuatro, un consorcio liderado por Princeton publicó el mapa completo del cerebro de una mosca: ciento treinta y nueve mil neuronas, cincuenta millones de conexiones."
     },
     {
       "id": "04",
+      "escena": "juego",
+      "texto": "Salió en Nature, es gratis, y con él hicimos un juego: tú contra ella."
+    },
+    {
+      "id": "05",
       "escena": "vivo",
       "texto": "Y la mosca no está animada. Su cerebro está corriendo de verdad dentro de tu navegador: mil cuatrocientas neuronas, conectadas igual que en el animal."
     },
     {
-      "id": "05",
+      "id": "06",
       "escena": "ve",
       "texto": "Cuando tú ves caer el matamoscas, ella también lo ve. La sombra crece sobre sus ojos, y una señal sale disparada por su cabeza."
     },
     {
-      "id": "06",
+      "id": "07",
       "escena": "gigante",
       "texto": "Al final de ese camino hay una sola neurona, la más gruesa de todo su cerebro. Le dicen la neurona gigante."
     },
     {
-      "id": "07",
+      "id": "08",
       "escena": "gigante",
       "texto": "Cuando se enciende, la mosca salta. Del ojo al músculo hay cinco pasos. Cinco. Por eso te gana."
     },
     {
-      "id": "08",
+      "id": "09",
       "escena": "aprende",
       "texto": "Pero aquí viene lo bueno: aprende. Cada manotazo que le tiras le afina un poco la vía de escape."
     },
     {
-      "id": "09",
+      "id": "10",
       "escena": "aprende",
       "texto": "Reacciona antes, y cambia a un salto de emergencia tres veces más rápido que el normal."
     },
     {
-      "id": "10",
+      "id": "11",
       "escena": "generaciones",
       "texto": "Las primeras las aplastas fácil. Para la novena, ya no la alcanzas. Y el que le enseñó fuiste tú."
     },
     {
-      "id": "11",
+      "id": "12",
       "escena": "cansarla",
       "texto": "Tu única salida es cansarla. Golpes seguidos agotan esa vía y la vuelven lenta otra vez. Pero se recupera en dos segundos, así que hay que insistir."
     },
     {
-      "id": "12",
+      "id": "13",
       "escena": "honesto",
       "texto": "Y una aclaración que importa: aquí nadie entrenó a la mosca con datos. No hay una inteligencia artificial aprendiendo de ejemplos."
     },
     {
-      "id": "13",
+      "id": "14",
       "escena": "honesto",
       "texto": "Lo que hay son neuronas conectadas, y unas cuantas sinapsis que se fortalecen con el susto. Igual que en el bicho de verdad."
     },
     {
-      "id": "14",
+      "id": "15",
       "escena": "cierre",
       "texto": "Entra, tírale un manotazo, y cuenta cuántas veces le ganas antes de que empiece a ganarte ella."
     }

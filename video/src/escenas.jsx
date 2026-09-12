@@ -22,11 +22,61 @@ export function Gancho() {
   );
 }
 
-/* ── 2. De dónde sale el juego ───────────────────────────────────────── */
+/* ── 2. El mapa original, con su ficha de fuentes ────────────────────── */
+const FUENTE = [
+  ['publicado en', 'Nature 634, 124–138 · 2 oct 2024'],
+  ['artículo', 'Dorkenwald et al., “Neuronal wiring\ndiagram of an adult brain”'],
+  ['quién', 'FlyWire Consortium (Princeton)\n287 investigadores · 76 laboratorios'],
+  ['y voluntarios', '33 años-persona revisando el mapa\na mano desde 2019'],
+  ['datos abiertos', 'flywire.ai · codex.flywire.ai'],
+];
+
+export function Mapeo() {
+  return (
+    <>
+      <Rotulo>el mapa original</Rotulo>
+      <Lienzo style={{ justifyContent: 'flex-start' }}>
+        <Fundido inicio={0} largo={14} style={{ textAlign: 'center' }}>
+          <Contador hasta={139255} inicio={6} dur={44}
+            style={{ fontSize: 120, fontWeight: 700, color: COL.mosca, letterSpacing: '-0.05em' }} />
+          <div style={{ fontFamily: SANS, fontSize: 31, color: COL.tenue, marginTop: 6 }}>
+            neuronas · 50 millones de conexiones
+          </div>
+        </Fundido>
+
+        <Fundido inicio={58} largo={18} style={{ marginTop: 44, width: '100%' }}>
+          <div style={{
+            border: `1px solid ${COL.linea}`, borderRadius: 16, padding: '26px 30px',
+            background: 'rgba(255,255,255,.022)',
+          }}>
+            {FUENTE.map(([campo, valor], i) => (
+              <div key={campo} style={{
+                display: 'flex', gap: 22, alignItems: 'baseline',
+                paddingTop: i ? 13 : 0, marginTop: i ? 13 : 0,
+                borderTop: i ? `1px solid ${COL.linea}` : 'none',
+              }}>
+                <span style={{
+                  fontFamily: SANS, fontSize: 17, letterSpacing: '.13em', textTransform: 'uppercase',
+                  color: COL.tenue, minWidth: 186, textAlign: 'right', flexShrink: 0,
+                }}>{campo}</span>
+                <span style={{
+                  fontFamily: MONO, fontSize: 24, lineHeight: 1.38, color: COL.tinta,
+                  whiteSpace: 'pre-line',
+                }}>{valor}</span>
+              </div>
+            ))}
+          </div>
+        </Fundido>
+      </Lienzo>
+    </>
+  );
+}
+
+/* ── 3. De dónde sale el juego ───────────────────────────────────────── */
 export function Juego() {
   return (
     <>
-      <Rotulo>mapearon su cerebro neurona por neurona</Rotulo>
+      <Rotulo>y con ese mapa, un juego</Rotulo>
       <Lienzo>
         <Fundido inicio={4} largo={18} style={{ textAlign: 'center' }}>
           <div style={{ fontSize: 108, marginBottom: 24 }}>🪰</div>

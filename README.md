@@ -170,5 +170,7 @@ python3 -m http.server 8000
 
 ## Fuentes
 
-- [FlyWire](https://flywire.ai) y [neuPrint · Janelia](https://neuprint.janelia.org) — conectomas públicos de *Drosophila*
+- Dorkenwald et al., *Neuronal wiring diagram of an adult brain*, [Nature 634, 124–138 (2024)](https://www.nature.com/articles/s41586-024-07558-y) — el conectoma completo: 139,255 neuronas y ~5×10⁷ sinapsis del cerebro de una *Drosophila* adulta
+- Schlegel et al., *Whole-brain annotation and multi-connectome cell typing of Drosophila*, [Nature 634, 139–152 (2024)](https://www.nature.com/articles/s41586-024-07686-5) — los tipos celulares que dan nombre a LPLC2, LC4, DNp01…
+- [FlyWire](https://flywire.ai) y [neuPrint · Janelia](https://neuprint.janelia.org) — conectomas públicos de *Drosophila*, descargables
 - Shiu et al., *A Drosophila computational brain model reveals sensorimotor processing*, [Nature 2024](https://www.nature.com/articles/s41586-024-07763-9)

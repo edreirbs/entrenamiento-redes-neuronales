@@ -3,11 +3,12 @@ import { AbsoluteFill, Audio, Sequence, staticFile, useCurrentFrame, useVideoCon
 import tiempos from '../tiempos.json';
 import { Fondo, Subtitulo } from './piezas.jsx';
 import {
-  Aprende, Cansarla, Cierre, Gancho, Generaciones, Gigante, Honesto, Juego, Ve, Vivo,
+  Aprende, Cansarla, Cierre, Gancho, Generaciones, Gigante, Honesto, Juego, Mapeo, Ve, Vivo,
 } from './escenas.jsx';
 
 const ESCENAS = {
   gancho: Gancho,
+  mapeo: Mapeo,
   juego: Juego,
   vivo: Vivo,
   ve: Ve,
