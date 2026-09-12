@@ -1,11 +1,14 @@
 /**
- * Circuitos de Drosophila usados en la arena.
+ * El circuito de escape de Drosophila.
  *
- * Ninguno es decorativo: cada capa corresponde a una población real descrita en
- * la literatura del conectoma, con su conectividad y su signo. Lo que NO es real
- * son los parámetros de la dinámica (umbral, fuga, ganancia): el conectoma es
- * anatomía estática y no dice la fuerza de cada sinapsis, así que eso lo
- * ajustamos nosotros. La interfaz lo dice explícitamente.
+ * Ninguna capa es decorativa: cada una corresponde a una población real descrita
+ * en la literatura del conectoma, con su conectividad y su signo. Lo que NO es
+ * real son los parámetros de la dinámica (umbral, fuga, ganancia): el conectoma
+ * es anatomía estática y no dice la fuerza de cada sinapsis, así que eso lo
+ * ajustamos nosotros. La página lo dice explícitamente.
+ *
+ * (Este repositorio tuvo antes circuitos olfativo y de cuerpo fungiforme, con
+ * sus mediciones. Siguen en el historial de git, en el commit 0ef5781.)
  */
 import { buildCSR, LIFNet } from './lif.js';
 
@@ -163,15 +166,20 @@ export function buildEscapeCircuit() {
     }
   }
 
-  const circuit = {
-    net, layout: L, nSyn: e.length, habituation: 0,
-    /** @param {number} h 0 = descansada, 1 = totalmente habituada */
-    setHabituation(h) {
-      this.habituation = Math.max(0, Math.min(1, h));
-      for (const [k, base] of conv) weights[k] = base * (1 - 0.92 * this.habituation);
+  return {
+    net, layout: L, nSyn: e.length, gain: 1,
+    /**
+     * Escala la convergencia sobre la neurona gigante, que es donde vive la
+     * plasticidad del escape en el animal.
+     *   g < 1  habituada   — responde menos y más tarde
+     *   g > 1  sensibilizada — responde antes, incluso a sombras tenues
+     * @param {number} g
+     */
+    setGain(g) {
+      this.gain = Math.max(0.2, Math.min(3, g));
+      for (const [k, base] of conv) weights[k] = base * this.gain;
     },
   };
-  return circuit;
 }
 
 /**
@@ -206,240 +214,4 @@ export function loomingFrame(out, cx, cy, r) {
  */
 export function loomingRadius(ttc, lOverV, focal) {
   return focal * lOverV / Math.max(ttc, 1);
-}
-
-// ───────────────────────────────────────────────────────────────────────────
-// 2. CIRCUITO OLFATIVO  (ronda del rastro de olor)
-//
-//   ORN (neuronas receptoras olfativas)  →  PN del lóbulo antenal  →
-//   dos salidas que compiten:
-//     · DNsurge  — mientras hay olor, corre contra el viento.
-//     · CL / CR  — oscilador de medio centro (inhibición mutua + adaptación)
-//       que genera el zigzag transversal cuando el olor se pierde.
-//   La neurona H mantiene el recuerdo del último contacto unos cientos de
-//   milisegundos e inhibe el zigzag: por eso la mosca sigue de frente un rato
-//   después de perder el rastro antes de ponerse a barrer.
-//
-//   Esto es la estrategia real de "surge and cast" de Drosophila, y aquí no
-//   está programada: emerge de la conectividad.
-// ───────────────────────────────────────────────────────────────────────────
-
-export const PLUME_DEFAULTS = {
-  tonDrive: 0.55,     // impulso tónico que alimenta el oscilador
-  mutual: -0.38,      // inhibición mutua entre los dos medios centros
-  adaptGain: 0.012,   // qué tan rápido se cansa el lado que va ganando
-  adaptInhib: -0.80,
-  adaptStrength: 0.6, // qué tan completa es la adaptación del receptor
-  tauTrace: 450,      // cuánto dura el recuerdo del último contacto (ms)
-  searchSuppress: 0.0012, // cuánto se ensancha el barrido al llevar rato sin oler
-  tauSearch: 5000,
-  traceSurge: 0.22,   // el recuerdo mantiene el avance contra el viento
-  traceInhib: 0.40,   // ...y mantiene apagado el zigzag
-};
-
-export function buildPlumeCircuit(opts = {}) {
-  const O = { ...PLUME_DEFAULTS, ...opts };
-  const L = new Layout();
-  L.add('ORN',    40, { tau: 12, vth: 1.00, refrac: 2.0 });
-  L.add('PN',     20, { tau: 14, vth: 1.00, refrac: 2.5 });
-  L.add('DNsurge', 4, { tau: 18, vth: 1.00, refrac: 4.0 });
-  L.add('H',       6, { tau: 45, vth: 1.00, refrac: 6, jitter: 0.3 });  // detector de contacto
-  L.add('TON',     4, { tau: 15, vth: 1.00, refrac: 6 });     // impulso tónico del oscilador
-  L.add('CL',      6, { tau: 16, vth: 1.00, refrac: 5 });
-  L.add('CR',      6, { tau: 16, vth: 1.00, refrac: 5 });
-  L.add('AL',      3, { tau: 300, vth: 1.00, refrac: 16 });   // adaptación lenta
-  L.add('AR',      3, { tau: 300, vth: 1.00, refrac: 16 });
-
-  const e = [];
-  for (let i = 0; i < 40; i++) e.push([L.idx('ORN', i), L.idx('PN', i % 20), 0.55]);
-  for (let i = 0; i < 20; i++) {
-    for (let j = 0; j < 4; j++) e.push([L.idx('PN', i), L.idx('DNsurge', j), 0.22]);
-    for (let j = 0; j < 6; j++) e.push([L.idx('PN', i), L.idx('H', j), 0.075]);
-  }
-  // Oscilador de medio centro.
-  for (let t = 0; t < 4; t++) {
-    for (let i = 0; i < 6; i++) {
-      e.push([L.idx('TON', t), L.idx('CL', i), O.tonDrive]);
-      e.push([L.idx('TON', t), L.idx('CR', i), O.tonDrive]);
-    }
-  }
-  for (let i = 0; i < 6; i++) {
-    for (let j = 0; j < 6; j++) {
-      e.push([L.idx('CL', i), L.idx('CR', j), O.mutual]);
-      e.push([L.idx('CR', i), L.idx('CL', j), O.mutual]);
-    }
-    for (let a = 0; a < 3; a++) {
-      e.push([L.idx('CL', i), L.idx('AL', a), O.adaptGain]);
-      e.push([L.idx('CR', i), L.idx('AR', a), O.adaptGain]);
-    }
-  }
-  for (let a = 0; a < 3; a++) {
-    for (let i = 0; i < 6; i++) {
-      e.push([L.idx('AL', a), L.idx('CL', i), O.adaptInhib]);
-      e.push([L.idx('AR', a), L.idx('CR', i), O.adaptInhib]);
-    }
-  }
-
-  const params = L.materialize();
-  const net = new LIFNet(L.n, buildCSR(L.n, e), { ...params, noise: 0.02 });
-  return { net, layout: L, nSyn: e.length, opts: O, trace: 0, adapt: 0, search: 0 };
-}
-
-/**
- * Un paso del circuito olfativo.
- *
- * La persistencia del contacto NO se guarda en la red recurrente: una neurona
- * LIF se resetea al disparar, y un atractor recurrente afinado para durar medio
- * segundo resulta biestable — o se apaga en 15 ms o se queda encendido tres
- * segundos. Lo medimos y por eso no lo usamos. En su lugar modelamos lo que de
- * verdad sostiene la memoria corta dentro de una neurona: una traza
- * intracelular lenta, del tipo del calcio, que sube con cada contacto y decae
- * con su propia constante de tiempo.
- *
- * @param {number} odor concentración de olor en la posición de la mosca, 0..1
- */
-export function plumeStep(pl, dt, odor) {
-  const { net, layout, opts } = pl;
-  const P = layout.pops;
-  const I = new Float32Array(net.n);
-
-  for (let i = P.TON.start; i < P.TON.end; i++) I[i] = 0.09;
-  // Dos propiedades reales de los receptores olfativos, y las dos importan:
-  //
-  //  · Son LOGARÍTMICOS, lo que les deja responder igual a una bocanada tenue
-  //    que a una fuerte. Con respuesta lineal la mosca cruza el penacho sin
-  //    olerlo.
-  //  · Se ADAPTAN: señalan el cambio de concentración, no su valor. Una mosca
-  //    metida en olor constante deja de recibir señal. Sin esto se clava
-  //    avanzando contra el viento y nunca corrige de lado.
-  pl.adapt += (odor - pl.adapt) * (1 - Math.exp(-dt / 300));
-  const phasic = Math.max(0, odor - opts.adaptStrength * pl.adapt);
-  const drive = 0.62 * Math.log10(1 + 12 * phasic);
-  for (let i = P.ORN.start; i < P.ORN.end; i++) I[i] = drive;
-
-  // La traza empuja el avance contra el viento y mantiene callado el zigzag.
-  for (let i = P.DNsurge.start; i < P.DNsurge.end; i++) I[i] += opts.traceSurge * pl.trace;
-  for (let i = P.CL.start; i < P.CR.end; i++) I[i] -= opts.traceInhib * pl.trace;
-
-  // Cuanto más tiempo lleva sin oler nada, más se frena la señal que hace
-  // alternar el oscilador. Cada barrido dura más y por lo tanto llega más
-  // lejos: es el ensanchamiento progresivo del barrido que hacen los insectos
-  // reales cuando pierden un rastro. Sin esto la mosca sólo puede seguir un
-  // penacho en el que ya está, nunca encontrar uno que se le escapó.
-  for (let i = P.AL.start; i < P.AL.end; i++) I[i] -= opts.searchSuppress * pl.search;
-  for (let i = P.AR.start; i < P.AR.end; i++) I[i] -= opts.searchSuppress * pl.search;
-
-  const fired = net.step(dt, I);
-
-  let hits = 0;
-  for (const i of fired) if (i >= P.H.start && i < P.H.end) hits++;
-  pl.trace = pl.trace * Math.exp(-dt / opts.tauTrace) + hits * 0.05;
-  pl.trace = Math.min(1.4, pl.trace);
-
-  if (pl.trace > 0.08) pl.search = 0;
-  else pl.search = Math.min(1, pl.search + dt / opts.tauSearch);
-
-  return fired;
-}
-
-/** Tasas por población en el último paso, para leer la conducta y dibujar. */
-export function popRates(net, layout, names) {
-  const out = {};
-  for (const n of names) {
-    const p = layout.pops[n];
-    let c = 0;
-    for (const i of net.prevSpikes) if (i >= p.start && i < p.end) c++;
-    out[n] = c / p.size;
-  }
-  return out;
-}
-
-// ───────────────────────────────────────────────────────────────────────────
-// 3. CUERPO FUNGIFORME  (ronda de memoria)
-//
-//   PN  →  células de Kenyon (código disperso: cada KC exige coincidencia de
-//   varias PN)  →  MBON de aproximación, con pesos PLÁSTICOS.
-//   Una neurona dopaminérgica marca la puerta correcta y potencia las sinapsis
-//   de las KC activas en ese momento. Esa huella decae con una constante de
-//   unos dos segundos: es literalmente la memoria de la mosca, y es la razón
-//   por la que en esta ronda pierde.
-// ───────────────────────────────────────────────────────────────────────────
-
-export const N_DOORS = 4;
-export const N_KC = 200;
-const KC_FANIN = 6;
-
-export function buildMemoryCircuit(rng = Math.random, opts = {}) {
-  const L = new Layout();
-  L.add('PN',   N_DOORS * 10, { tau: 14, vth: 1.00, refrac: 2.5 });
-  L.add('KC',   N_KC,         { tau: 11, vth: 1.00, refrac: 4.0 });
-  L.add('MBON', 4,            { tau: 16, vth: 1.00, refrac: 4.0 });
-
-  const e = [];
-  // Cada KC muestrea al azar unas pocas PN y exige coincidencia: código disperso.
-  const kcInputs = [];
-  for (let k = 0; k < N_KC; k++) {
-    const src = new Set();
-    while (src.size < KC_FANIN) src.add(Math.floor(rng() * N_DOORS * 10));
-    kcInputs.push([...src]);
-    for (const s of src) e.push([L.idx('PN', s), L.idx('KC', k), 0.38]);
-  }
-
-  const params = L.materialize();
-  const net = new LIFNet(L.n, buildCSR(L.n, e), { ...params, noise: 0.006 });
-
-  return {
-    net, layout: L, nSyn: e.length, kcInputs,
-    /** Pesos plásticos KC → MBON de aproximación. Empiezan en cero. */
-    w: new Float32Array(N_KC),
-    tauMem: opts.tauMem ?? 1100,
-    gain: opts.gain ?? 0.05,
-    wCap: opts.wCap ?? 0.30,
-  };
-}
-
-/** Un paso del cuerpo fungiforme: propaga, aplica plasticidad y decaimiento. */
-export function memoryStep(mb, dt, I, dopamine) {
-  const { net, layout, w } = mb;
-  const kc = layout.pops.KC, mbon = layout.pops.MBON;
-
-  // Las KC que dispararon empujan al MBON a través de los pesos plásticos.
-  let drive = 0;
-  for (const i of net.prevSpikes) if (i >= kc.start && i < kc.end) drive += w[i - kc.start];
-  for (let m = mbon.start; m < mbon.end; m++) I[m] += drive / dt;
-
-  const fired = net.step(dt, I);
-
-  // Dopamina presente → se potencian las sinapsis de las KC activas ahora.
-  if (dopamine > 0) {
-    for (const i of fired) {
-      if (i >= kc.start && i < kc.end) {
-        const k = i - kc.start;
-        w[k] = Math.min(mb.wCap, w[k] + mb.gain * dopamine);
-      }
-    }
-  }
-  // Olvido.
-  const d = Math.exp(-dt / mb.tauMem);
-  for (let k = 0; k < w.length; k++) w[k] *= d;
-
-  return fired;
-}
-
-/**
- * Elección de puerta a partir de la respuesta del MBON a cada clave.
- * No es un argmax: es una elección probabilística (softmax), que es como se
- * comportan los animales y lo que hace que la memoria se degrade suave hacia el
- * azar en lugar de apagarse de golpe.
- */
-export function chooseDoor(scores, temperature = 3.2, rng = Math.random) {
-  const m = Math.max(...scores);
-  const ex = scores.map((s) => Math.exp((s - m) / temperature));
-  const total = ex.reduce((a, b) => a + b, 0);
-  let r = rng() * total;
-  for (let d = 0; d < ex.length; d++) {
-    r -= ex[d];
-    if (r <= 0) return d;
-  }
-  return ex.length - 1;
 }

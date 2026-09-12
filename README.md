@@ -1,140 +1,90 @@
-# Tú contra la mosca
+# Mátala si puedes
 
-Dos duelos en 3D contra el cerebro de una mosca de la fruta, simulado neurona
-por neurona en el navegador. No hay video ni grabación: cada ronda construye su
-circuito, lo corre paso a paso en tiempo real contra tus reflejos, y lo dibuja
-**dentro de la cabeza de la mosca**. Cada punto que se enciende ahí es una
-neurona del circuito disparando de verdad, colocada más o menos donde va en el
-animal.
+Intentas aplastar una mosca. Su cerebro está simulado neurona por neurona en tu
+navegador, y **aprende de cada intento tuyo**. Las primeras las matas fácil. Para
+la octava o novena ya no la tocas.
 
-**Ronda 1 — el matamoscas.** Una sombra se expande sobre los dos y gana el
-primero en saltar. Tú reaccionas en unos 250 ms. La vía de escape de la mosca
-—cinco sinapsis entre el fotón y el músculo del salto, la última es la neurona
-gigante DNp01— dispara a los ~220 ms desde que la sombra aparece. El duelo está
-calibrado para que sea apretado y se pueda ganar, aunque casi siempre se pierde.
+Estás entrenando a tu propia enemiga.
 
-**Ronda 2 — la memoria.** Se enciende uno de cuatro terrones de azúcar, se apaga
-la luz tres segundos y hay que recordar cuál era. Su cuerpo fungiforme sí aprende, pero la
-huella decae con τ ≈ 1.1 s y a los tres segundos ya está en el azar. Esta la
-ganas tú.
+**https://edreirbs.github.io/entrenamiento-redes-neuronales/**
 
-El remate no es "la mosca es mejor" ni al revés: cada arquitectura está resuelta
-para un problema distinto.
+## Lo que es real
 
-## La mosca aprende entre partidas
+**El cableado.** Los puntos que se encienden dentro de su cabeza son las neuronas
+del circuito de escape de *Drosophila* —fotorreceptores, lámina, T5, LPLC2, LC4
+y **DNp01**, la neurona gigante— conectadas como en el animal y colocadas más o
+menos donde van. Cada punto es una neurona y su brillo es su disparo real. Son
+1,408 neuronas y 4,972 sinapsis corriendo a 2,000 pasos por segundo.
 
-En dos direcciones opuestas, y sólo una de ellas es "mejorar". Todo se guarda en
-el `localStorage` de quien juega y no sale de ahí.
+**Lo que ves es lo que ella ve.** El matamoscas baja a velocidad constante y se
+proyecta sobre su campo visual como una cámara estenopeica: el radio depende de
+la altura y el centro se desplaza si el golpe no viene justo de arriba. Por eso
+apuntarle de lado no lo percibe igual.
 
-**Habituación (ronda 1): se vuelve más lenta.** Ante estímulos de aproximación
-repetidos, las sinapsis de LPLC2 y LC4 que convergen sobre DNp01 se deprimen. Es
-aprendizaje no asociativo y está documentado en el animal. Medido en el
-navegador: una mosca descansada salta a 206–235 ms; completamente habituada, a
-241–262 ms. Esos ~30 ms son justo la diferencia entre imposible y ganable para un
-humano. Se recupera con el descanso (τ = 10 min), así que si dejas la página un
-rato la encuentras fresca.
+**Nuestro: la dinámica.** Un conectoma es anatomía estática y no dice la fuerza de
+cada sinapsis ni las constantes de tiempo. Esos parámetros se ajustaron midiendo
+hasta que el circuito se comportara como el animal.
 
-**Consolidación (ronda 2): recuerda un poco más.** Entrenar repetido alarga la
-constante de olvido del cuerpo fungiforme, de 1100 ms hacia 1330 ms de forma
-saturante. Eso lleva su acierto a un solo terrón de ~37 % a ~85 % tras unas doce
-partidas. Que la consolidación exista está documentado; **la curva concreta de
-esta página es nuestra, no una medición**, y así se dice en la propia página.
+## Cómo aprende
 
-El orden de una secuencia no lo aprende nunca: el cuerpo fungiforme asocia clave
-con valor, no posiciones con tiempos.
+Nada de esto es backpropagation. No hay entrenamiento ni datos: hay plasticidad
+en unas sinapsis concretas, y se guarda en el `localStorage` de quien juega.
 
-## Lo que es real y lo que no
+**Sensibilización** — documentada en el animal. El susto sube la ganancia de las
+sinapsis de LPLC2 y LC4 que convergen sobre DNp01, y el umbral efectivo baja. De
+0.60 a 2.20 conforme juegas.
 
-**Real: la arquitectura.** Las poblaciones (fotorreceptores, lámina, T5, LPLC2,
-LC4, DNp01, células de Kenyon, MBON) y la forma en que se conectan están tomadas
-de la literatura del conectoma de *Drosophila*.
+**Despegue corto** — documentado. La mosca tiene dos formas de despegar: con la
+neurona gigante metida el salto es explosivo pero peor dirigido; sin ella lo
+prepara con calma y sale tarde. Aquí el tiempo para despejar la zona de impacto
+baja de 105 ms a 30 ms.
 
-**Nuestro: la dinámica.** Un conectoma es anatomía estática. No dice la fuerza de
-cada sinapsis ni las constantes de tiempo, así que esos parámetros se ajustaron
-hasta que el circuito se comportara como el animal. Cambiarlos cambia el
-resultado, y decirlo es parte del punto de la pieza.
+**Sesgo direccional** — *modelo nuestro, no medición*. Se acuerda de por dónde le
+suelen llegar los golpes y salta al lado contrario.
 
-**Escala.** Corren 1,408 neuronas en la ronda 1 y 244 en la ronda 2, no las
-166,700 del conectoma completo. Se eligieron los circuitos específicos de cada
-tarea, no el cerebro entero.
+El arco resultante, medido contra un matamoscas de 270 ms:
 
-Nada aquí está entrenado: no hay backpropagation, ni pesos aprendidos, ni datos
-de entrenamiento. El comportamiento sale del cableado.
+| generación | reacción | despegue | total | ¿escapa? |
+|---|---|---|---|---|
+| 1 | 186 ms | 105 ms | 291 ms | 0 de 10 |
+| 3 | 183 ms | 101 ms | 284 ms | 0 de 10 |
+| 6 | 170 ms | 94 ms | 264 ms | 3 de 10 |
+| 9 | 161 ms | 87 ms | 248 ms | 10 de 10 |
 
-## La ronda que no llegó
-
-Había una tercera ronda, de rastreo de olor, y está en `src/rounds/plume.js`
-**sin conectar a la página**. El circuito olfativo hace lo que debe: avanza
-contra el viento mientras huele y barre de lado al perder el rastro, con las dos
-conductas emergiendo de la competencia entre poblaciones, no de un algoritmo.
-
-Pero al medirlo contra un control trivial —un agente que simplemente va en línea
-recta contra el viento sin oler nada— las tasas de éxito resultaron idénticas:
-
-| configuración | mosca | ir recto sin oler |
-|---|---|---|
-| meandro 0.010, salida ±0.05 | 100 % | 100 % |
-| meandro 0.010, salida ±0.10 | 12 % | 12 % |
-| meandro 0.025, salida ±0.05 | 98 % | 98 % |
-| emisión c/110 ms | 28 % | 28 % |
-
-Estaba ganando por la razón equivocada. El barrido, de unas 0.05 unidades de
-amplitud, nunca recupera un penacho del que ya salió; ensancharlo modulando la
-adaptación del oscilador sólo lo llevó de 0.035 a 0.053. Haría falta otro
-mecanismo de navegación —dirección referida al viento con estimación de la línea
-central del penacho, o una arena mucho más grande y lenta— y eso es otro
-proyecto. Publicarla como demostración de rastreo olfativo habría sido
-exactamente lo que esta página le critica a las demos virales.
+La zona interesante es la generación 6, donde se decide por márgenes de uno a
+cinco milisegundos.
 
 ## Estructura
 
 ```
-index.html            una pantalla, casi sin texto
+index.html              una pantalla
 assets/style.css
 vendor/three.module.js  Three.js r160, incluido para no depender de un CDN
-src/lif.js            motor de integración y disparo con fuga, sinapsis dispersas en CSR
-src/circuits.js       los tres circuitos: escape, olfativo, cuerpo fungiforme
-src/fly3d.js          la mosca por geometría, con el circuito dentro de la cabeza
-src/scene3d.js        mesa, luces, matamoscas y terrones
-src/main.js           las dos rondas
-src/learning.js       lo que se lleva de una partida a la siguiente
-src/rounds/plume.js   ronda descartada, sin conectar (ver arriba)
+src/lif.js              motor de integración y disparo con fuga, sinapsis dispersas en CSR
+src/circuits.js         el circuito de escape
+src/fly3d.js            la mosca por geometría, con el circuito dentro de la cabeza
+src/scene3d.js          mesa, luces, matamoscas y mira
+src/learning.js         lo que se lleva de un intento al siguiente
+src/main.js             el juego
 ```
 
-El matamoscas baja a velocidad constante, así que su tamaño angular crece
-exactamente como el estímulo que se le inyecta al circuito: lo que ves caer y lo
-que la mosca simulada "ve" son la misma cosa.
-
-Los circuitos son ejecutables fuera del navegador, que es como se calibraron:
+El circuito corre fuera del navegador, que es como se calibró:
 
 ```bash
 node --input-type=module -e "
 import { buildEscapeCircuit } from './src/circuits.js';
-const { net, nSyn } = buildEscapeCircuit();
-console.log(net.n, 'neuronas,', nSyn, 'sinapsis');
+const c = buildEscapeCircuit();
+console.log(c.net.n, 'neuronas,', c.nSyn, 'sinapsis');
 "
 ```
 
-## Publicarlo en GitHub Pages
-
-Pages hay que encenderlo una vez a mano: el token de GitHub Actions no tiene
-permiso para crear el sitio (`Resource not accessible by integration`), sólo
-para desplegar en uno que ya exista. En **Settings → Pages**, cualquiera de las
-dos opciones sirve:
-
-- **Deploy from a branch** → rama `claude/como-hace-eso-la-gente-sywnpp`,
-  carpeta `/ (root)`. Es lo más directo: el sitio es estático y no necesita
-  compilarse. Queda publicado en un par de minutos y el flujo de Actions ni se
-  usa.
-- **GitHub Actions** → y luego volver a lanzar el flujo *Publicar en GitHub
-  Pages* desde la pestaña Actions.
-
-Queda en `https://edreirbs.github.io/entrenamiento-redes-neuronales/`.
+Este repositorio tuvo antes un circuito olfativo y uno de cuerpo fungiforme, con
+sus mediciones —incluido un resultado negativo documentado sobre rastreo de
+olor—. Siguen en el historial de git, en el commit `0ef5781`.
 
 ## Correrlo localmente
 
-Son módulos ES, así que hace falta servirlo por HTTP (abrir el archivo
-directamente falla por CORS):
+Son módulos ES, así que hay que servirlo por HTTP:
 
 ```bash
 python3 -m http.server 8000

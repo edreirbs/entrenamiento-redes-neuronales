@@ -1,75 +1,89 @@
 /**
- * Lo que la mosca se lleva de una partida a la siguiente.
+ * Lo que la mosca se lleva de un intento al siguiente.
  *
- * Son dos aprendizajes opuestos, y sólo uno de ellos es "mejorar":
+ * Dos cosas, y las dos tienen respaldo en el animal:
  *
- *  · HABITUACIÓN (ronda 1). Documentada en el animal: ante estímulos de
- *    aproximación repetidos, las sinapsis que convergen sobre la neurona
- *    gigante se deprimen y la mosca tarda más en saltar, o deja de saltar.
- *    Es aprendizaje no asociativo, y la vuelve PEOR. Se recupera con el
- *    descanso, así que si dejas la página un rato la encuentras fresca.
+ *  · SENSIBILIZACIÓN. Un susto fuerte sube la respuesta de la vía de escape:
+ *    las sinapsis que convergen sobre la neurona gigante empujan más y el
+ *    umbral efectivo baja, así que reacciona a sombras más tenues y más
+ *    pronto. Es aprendizaje no asociativo, el hermano opuesto de la
+ *    habituación.
  *
- *  · CONSOLIDACIÓN (ronda 2). El entrenamiento repetido y espaciado produce
- *    memoria de largo plazo en el cuerpo fungiforme. Aquí se modela como una
- *    huella que tarda más en decaer conforme se entrena. Que la consolidación
- *    exista está documentado; la curva concreta de esta página es NUESTRA, no
- *    una medición.
+ *  · DESPEGUE CORTO. La mosca tiene dos formas de despegar. Con la neurona
+ *    gigante metida, el despegue es explosivo y sale en pocos milisegundos,
+ *    aunque peor dirigido. Sin ella, prepara el salto con calma y sale mejor
+ *    orientada, pero tarde. Cuanto más sensibilizada, más usa el corto.
  *
- * Todo vive en el navegador de quien juega (localStorage) y no sale de ahí.
+ *  · Y una tercera que es MODELO NUESTRO, no medición: se acuerda de por dónde
+ *    le llegan los matamoscas y sesga su salto hacia el lado contrario.
+ *
+ * Todo vive en el navegador de quien juega y no sale de ahí.
  */
 
-const KEY = 'mosca.aprendizaje.v1';
+const KEY = 'mosca.v2';
 
-const FRESH = { hab: 0, lastSeen: 0, entrenamientos: 0, partidas: 0 };
+const FRESH = {
+  gen: 1,          // generación actual
+  kills: 0,        // cuántas has aplastado
+  swats: 0,        // cuántos intentos llevas
+  racha: 0,        // aciertos seguidos ahora mismo
+  best: 0,         // tu mejor racha
+  dir: [0, 0],     // de dónde suelen venir los golpes, en coordenadas de mesa
+  lastSeen: 0,
+};
 
-/** Constante de recuperación de la habituación: diez minutos de descanso. */
-const RECOVERY_MS = 10 * 60 * 1000;
-const HAB_CAP = 0.85;          // nunca del todo habituada: seguiría sin saltar jamás
-const HAB_PER_LOOM = 0.055;
+// Ganancia de la convergencia sobre DNp01: empieza floja y se sensibiliza.
+const GAIN_MIN = 0.60, GAIN_MAX = 2.20;
+const GAIN_POR_MUERTE = 0.028, GAIN_POR_INTENTO = 0.006;
+
+// Tiempo entre el disparo de la neurona gigante y despejar la zona de impacto.
+const DESPEGUE_LARGO = 105, DESPEGUE_CORTO = 30;
+
+/** Cuánto ha aprendido, 0..1. Es lo que dibuja la barra. */
+export function progreso(s) {
+  const bruto = s.kills * GAIN_POR_MUERTE + s.swats * GAIN_POR_INTENTO;
+  return Math.min(1, bruto / (GAIN_MAX - GAIN_MIN));
+}
+
+export function ganancia(s) {
+  return GAIN_MIN + progreso(s) * (GAIN_MAX - GAIN_MIN);
+}
+
+/** Milisegundos entre el disparo de DNp01 y salir de la zona de impacto. */
+export function despegue(s) {
+  return DESPEGUE_LARGO + progreso(s) * (DESPEGUE_CORTO - DESPEGUE_LARGO);
+}
+
+/** Sesgo aprendido: hacia dónde conviene saltar, dado de dónde suelen llegar. */
+export function sesgo(s) {
+  const [x, z] = s.dir;
+  const m = Math.hypot(x, z);
+  if (m < 0.01) return [0, 0];
+  const fuerza = Math.min(0.75, progreso(s) * 1.1);
+  return [-x / m * fuerza, -z / m * fuerza];
+}
+
+/** Registra de dónde vino este golpe, en coordenadas relativas a la mosca. */
+export function apuntar(s, dx, dz) {
+  const m = Math.hypot(dx, dz) || 1;
+  s.dir[0] = s.dir[0] * 0.82 + (dx / m) * 0.18;
+  s.dir[1] = s.dir[1] * 0.82 + (dz / m) * 0.18;
+}
 
 export function load() {
-  let s = { ...FRESH };
   try {
     const raw = localStorage.getItem(KEY);
-    if (raw) s = { ...FRESH, ...JSON.parse(raw) };
-  } catch { /* modo privado, almacenamiento bloqueado: se juega con una mosca nueva */ }
-
-  // La habituación se disipa con el descanso.
-  if (s.lastSeen) {
-    const rest = Date.now() - s.lastSeen;
-    if (rest > 0) s.hab *= Math.exp(-rest / RECOVERY_MS);
-  }
-  s.hab = Math.max(0, Math.min(HAB_CAP, s.hab));
-  return s;
+    if (raw) return { ...FRESH, ...JSON.parse(raw) };
+  } catch { /* almacenamiento bloqueado: se juega con una mosca nueva */ }
+  return { ...FRESH };
 }
 
 export function save(s) {
-  try {
-    localStorage.setItem(KEY, JSON.stringify({ ...s, lastSeen: Date.now() }));
-  } catch { /* si no se puede guardar, la mosca simplemente no recuerda */ }
+  try { localStorage.setItem(KEY, JSON.stringify({ ...s, lastSeen: Date.now() })); }
+  catch { /* si no se puede guardar, no recuerda entre visitas */ }
 }
 
 export function reset() {
   try { localStorage.removeItem(KEY); } catch { /* nada que borrar */ }
   return { ...FRESH };
-}
-
-/** Un estímulo de aproximación más: la vía de escape se deprime un poco. */
-export function habituar(s) {
-  s.hab = Math.min(HAB_CAP, s.hab + HAB_PER_LOOM);
-  return s;
-}
-
-/**
- * Constante de olvido del cuerpo fungiforme según cuánto se ha entrenado.
- * Sube rápido al principio y se aplana: es la forma de una curva de
- * aprendizaje, no una recta.
- */
-export function tauMemoria(s) {
-  return 1100 + 230 * (1 - Math.exp(-s.entrenamientos / 18));
-}
-
-/** 0..1, para dibujar la barra de consolidación. */
-export function consolidacion(s) {
-  return 1 - Math.exp(-s.entrenamientos / 18);
 }

@@ -9,8 +9,9 @@
  */
 import * as THREE from '../vendor/three.module.js';
 
-const BODY = 0x35353e;
+const BODY = 0x3f3f4a;
 const HEAD_Z = 0.30;   // posición de la cabeza sobre el eje del cuerpo
+const BASE_Y = 0.185;  // altura del cuerpo cuando camina
 
 function geo0(pos, col) {
   const g = new THREE.BufferGeometry();
@@ -30,10 +31,13 @@ export class Fly3D {
     this.accent = new THREE.Color(accent);
     this.group = new THREE.Group();
     this.t = 0;
-    this.state = 'idle';
-    this.jumpT = 0;
-    this.squashT = 0;
+    this.state = 'walk';
+    this.timer = 1;
+    this.yaw = 0;
+    this.speed = 0.2;
+    this.alive = true;
     this.wingSpeed = 34;
+    this.bounds = { x: 1.9, z: 1.2 };
 
     this.build();
     // Sólo la mosca simulada lleva cerebro visible. La del jugador es una
@@ -49,8 +53,8 @@ export class Fly3D {
       color: BODY, roughness: 0.34, metalness: 0.55,
       transparent: true, opacity, depthWrite: false,
     });
-    const body = shell(0.62);
-    const bodyGlow = shell(0.42);
+    const body = shell(0.80);
+    const bodyGlow = shell(0.58);
 
     // ── Abdomen, con sus anillos.
     const abd = new THREE.Mesh(new THREE.SphereGeometry(0.17, 24, 18), body);
@@ -77,7 +81,7 @@ export class Fly3D {
       new THREE.SphereGeometry(0.172, 28, 20),
       new THREE.MeshStandardMaterial({
         color: 0x20202a, roughness: 0.25, metalness: 0.3,
-        transparent: true, opacity: 0.22, depthWrite: false,
+        transparent: true, opacity: 0.30, depthWrite: false,
       }),
     );
     this.head.scale.set(1.12, 1, 0.86);
@@ -144,7 +148,7 @@ export class Fly3D {
       }
     }
 
-    this.group.position.y = 0.24;
+    this.group.position.y = BASE_Y;
   }
 
   /**
@@ -297,73 +301,104 @@ export class Fly3D {
 
   fire() { if (this.flashLight) this.flash = 1; }
 
-  jump() { if (this.state === 'idle') { this.state = 'jump'; this.jumpT = 0; } }
+  // ─── Conducta ──────────────────────────────────────────────────────
+  // Caminar, acicalarse y escapar. La mosca que se queda quieta no da miedo;
+  // la que se pasea por la mesa mientras la acechas, sí.
 
-  squash() { if (this.state !== 'jump') { this.state = 'squashed'; this.squashT = 0; } }
-
-  /** Salta hasta un punto de la mesa. Se usa para elegir terrón de azúcar. */
-  hopTo_(x, z) {
-    this.hopFrom = { x: this.group.position.x, z: this.group.position.z };
-    this.hopTo = { x, z };
-    this.hopYaw = Math.atan2(x - this.hopFrom.x, z - this.hopFrom.z);
-    this.hopT = 0;
-    this.state = 'hop';
+  place(x, z, yaw = Math.random() * 6.28) {
+    this.group.position.set(x, BASE_Y, z);
+    this.yaw = yaw;
+    this.group.rotation.set(0, yaw, 0);
+    this.group.scale.setScalar(this.baseScale ?? 1);
+    this.state = 'walk';
+    this.timer = 0.6 + Math.random() * 1.4;
+    this.speed = 0.16 + Math.random() * 0.1;
+    this.alive = true;
   }
 
-  reset() {
-    this.state = 'idle'; this.jumpT = 0; this.squashT = 0; this.flash = 0;
-    this.group.position.set(this.baseX ?? this.group.position.x, 0.24, 0);
-    this.group.rotation.set(0, this.baseYaw ?? 0, 0);
-    const k = this.baseScale ?? 1;
-    this.group.scale.set(k, k, k);
+  /** Escapa en la dirección dada, que le llega del propio circuito. */
+  escape(dx, dz, bounds) {
+    if (!this.alive || this.state === 'escape') return;
+    const m = Math.hypot(dx, dz) || 1;
+    this.state = 'escape';
+    this.escT = 0;
+    this.escDur = 0.62;
+    this.from = this.group.position.clone();
+    const dist = 0.85 + Math.random() * 0.55;
+    this.to = {
+      x: Math.max(-bounds.x, Math.min(bounds.x, this.from.x + (dx / m) * dist)),
+      z: Math.max(-bounds.z, Math.min(bounds.z, this.from.z + (dz / m) * dist)),
+    };
+    this.yaw = Math.atan2(this.to.x - this.from.x, this.to.z - this.from.z);
+  }
+
+  splat() {
+    if (!this.alive) return;
+    this.alive = false;
+    this.state = 'dead';
+    this.deadT = 0;
   }
 
   update(dt) {
     this.t += dt;
+    const walking = this.state === 'walk';
+    const flying = this.state === 'escape';
 
-    // Alas: en reposo casi quietas, en pleno salto un borrón.
-    const flying = this.state === 'jump' || this.state === 'hop';
-    const amp = flying ? 1.15 : 0.06;
-    const sp = flying ? this.wingSpeed * 2.4 : 3;
+    // Alas: quietas al caminar, borrón al escapar.
+    const amp = flying ? 1.2 : walking ? 0.05 : 0.02;
+    const sp = flying ? this.wingSpeed * 2.6 : 3;
     for (const { pivot, s } of this.wings) {
       const beat = Math.sin(this.t * sp);
       pivot.rotation.y = s * (0.30 + amp * 0.62 * (0.5 + 0.5 * beat));
       pivot.rotation.x = flying ? beat * 0.55 : 0;
     }
 
-    if (this.state === 'idle') {
-      // respiración mínima, para que no parezca un juguete
-      this.group.position.y = 0.24 + Math.sin(this.t * 2.1) * 0.004;
-      this.group.rotation.z = Math.sin(this.t * 1.3) * 0.02;
-    } else if (this.state === 'jump') {
-      this.jumpT += dt;
-      const u = Math.min(1, this.jumpT / 0.85);
-      this.group.position.y = 0.24 + Math.sin(u * Math.PI) * 1.9 + u * 0.5;
-      this.group.position.x = this.baseX + u * u * 0.55 * (this.dir ?? 1);
-      this.group.rotation.x = -u * 0.7;
-      this.group.rotation.z = u * 0.5 * (this.dir ?? 1);
-    } else if (this.state === 'squashed') {
-      this.squashT += dt;
-      const u = Math.min(1, this.squashT / 0.18);
-      const k = this.baseScale ?? 1;
-      this.group.scale.set(k * (1 + u * 0.55), k * (1 - u * 0.82), k * (1 + u * 0.55));
-      this.group.position.y = 0.24 - u * 0.17;
-    }
+    if (this.state === 'walk') {
+      this.timer -= dt;
+      if (this.timer <= 0) {
+        // De vez en cuando se para a acicalarse: es lo que hacen todo el día.
+        if (Math.random() < 0.42) { this.state = 'groom'; this.timer = 0.9 + Math.random() * 1.3; }
+        else { this.yaw += (Math.random() - 0.5) * 2.2; this.timer = 0.7 + Math.random() * 1.6; }
+      }
+      const b = this.bounds ?? { x: 1.9, z: 1.2 };
+      const nx = this.group.position.x + Math.sin(this.yaw) * this.speed * dt;
+      const nz = this.group.position.z + Math.cos(this.yaw) * this.speed * dt;
+      if (Math.abs(nx) > b.x || Math.abs(nz) > b.z) this.yaw += 2.2 + Math.random();
+      else { this.group.position.x = nx; this.group.position.z = nz; }
+      this.group.position.y = BASE_Y + Math.sin(this.t * 13) * 0.003;
+      this.group.rotation.y += (this.yaw - this.group.rotation.y) * Math.min(1, dt * 7);
+      this.group.rotation.z = Math.sin(this.t * 11) * 0.03;
 
-    if (this.state === 'hop') {
-      this.hopT += dt;
-      const u = Math.min(1, this.hopT / 0.62);
-      this.group.position.x = this.hopFrom.x + (this.hopTo.x - this.hopFrom.x) * u;
-      this.group.position.z = this.hopFrom.z + (this.hopTo.z - this.hopFrom.z) * u;
-      this.group.position.y = 0.24 + Math.sin(u * Math.PI) * 0.75;
-      this.group.rotation.y = this.hopYaw;
-      if (u >= 1) this.state = 'landed';
+    } else if (this.state === 'groom') {
+      this.timer -= dt;
+      if (this.timer <= 0) { this.state = 'walk'; this.timer = 0.8 + Math.random() * 1.6; }
+      this.group.position.y = BASE_Y + Math.sin(this.t * 3) * 0.004;
+      this.group.rotation.z = Math.sin(this.t * 16) * 0.09;
+      this.group.rotation.x = Math.sin(this.t * 13) * 0.05;
+
+    } else if (this.state === 'escape') {
+      this.escT += dt;
+      const u = Math.min(1, this.escT / this.escDur);
+      this.group.position.x = this.from.x + (this.to.x - this.from.x) * u;
+      this.group.position.z = this.from.z + (this.to.z - this.from.z) * u;
+      this.group.position.y = BASE_Y + Math.sin(u * Math.PI) * 0.92;
+      this.group.rotation.y = this.yaw;
+      this.group.rotation.x = -Math.sin(u * Math.PI) * 0.5;
+      this.group.rotation.z = Math.sin(u * 6) * 0.12;
+      if (u >= 1) { this.state = 'walk'; this.timer = 0.5 + Math.random(); }
+
+    } else if (this.state === 'dead') {
+      this.deadT += dt;
+      const u = Math.min(1, this.deadT / 0.16);
+      const k = this.baseScale ?? 1;
+      this.group.scale.set(k * (1 + u * 0.6), k * (1 - u * 0.85), k * (1 + u * 0.6));
+      this.group.position.y = BASE_Y - u * 0.14;
     }
 
     if (this.flash > 0) {
       this.flash = Math.max(0, this.flash - dt * 3.2);
       this.flashLight.intensity = this.flash * 3.5;
-      this.axonMat.opacity = 0.15 + this.flash * 0.85;
+      this.axonMat.opacity = 0.2 + this.flash * 0.8;
     }
   }
 }

@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Tú contra la mosca</title>
-<meta name="description" content="Dos duelos contra el cerebro de una mosca, simulado neurona por neurona en 3D.">
+<title>Mátala si puedes</title>
+<meta name="description" content="Intenta aplastar una mosca cuyo cerebro está simulado neurona por neurona. Aprende de cada intento tuyo.">
 <link rel="stylesheet" href="assets/style.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪰</text></svg>">
 </head>
@@ -12,20 +12,27 @@
 
 <canvas id="stage"></canvas>
 
-<div class="brandmini">🪰 <span>Tú contra la mosca</span></div>
-<div class="rounddots" id="dots"></div>
+<div class="hud">
+  <div class="kills">
+    <b id="kills">0</b>
+    <span>aplastadas</span>
+    <em id="rate">0 de 0 intentos</em>
+  </div>
+  <div class="she">
+    <div class="gen">generación <b id="gen">1</b></div>
+    <div class="react"><b id="react">—</b><span>de reacción</span></div>
+    <div class="bar"><i id="learn"></i></div>
+    <div class="barlab" id="learnlab">sin experiencia</div>
+  </div>
+</div>
 
-<div class="tag tag-h" id="tagH">TÚ</div>
-<div class="tag tag-f" id="tagF">SIMULADA</div>
-<div class="num num-h" id="numH"></div>
-<div class="num num-f" id="numF"></div>
+<div class="flash" id="flash"></div>
+<div class="hint" id="hint"></div>
 
-<div class="cue" id="cue"></div>
-<div class="controls" id="controls"></div>
-
-<div class="learn" id="learn" hidden>
-  <div class="lrow"><span>escape habituado</span><i><b id="barHab"></b></i></div>
-  <div class="lrow"><span>memoria consolidada</span><i><b id="barMem"></b></i></div>
+<div class="controls">
+  <span class="c"><kbd>mover</kbd> apuntar</span>
+  <span class="c"><kbd>clic</kbd> golpear</span>
+  <span class="c tap">en celular, toca donde quieras pegarle</span>
 </div>
 
 <div class="veil" id="veil">
@@ -36,32 +43,25 @@
 
 <dialog id="about">
   <h3>¿Qué tan real es esto?</h3>
-  <p><b>Real:</b> el cableado. Los puntos que se encienden dentro de la cabeza son
-  las neuronas del circuito de escape de <i>Drosophila</i> — fotorreceptores,
+  <p><b>El cableado es real.</b> Los puntos que se encienden dentro de su cabeza
+  son las neuronas del circuito de escape de <i>Drosophila</i> — fotorreceptores,
   lámina, T5, LPLC2, LC4 y <b>DNp01</b>, la neurona gigante — conectadas como en
-  el animal. Cada punto es una neurona y su brillo es su disparo real.</p>
-  <p><b>Nuestro:</b> la dinámica. Un conectoma es anatomía estática y no dice la
-  fuerza de cada sinapsis, así que esos parámetros los ajustamos hasta que el
-  circuito se comportara como el animal.</p>
-  <p><b>Nada está entrenado de fábrica.</b> No hay backpropagation ni datos de
-  entrenamiento: la conducta sale del cableado.</p>
-  <p><b>Pero sí aprende mientras juegas, en dos direcciones opuestas.</b>
-  En la ronda 1 <i>habitúa</i>: ante estímulos de aproximación repetidos, las
-  sinapsis que convergen sobre la neurona gigante se deprimen y tarda más en
-  saltar. Eso está documentado en el animal, y se recupera con el descanso — si
-  dejas la página un rato, la vuelves a encontrar fresca. En la ronda 2
-  <i>consolida</i>: entrenar repetido hace que la huella tarde más en decaer.
-  Que la consolidación exista está documentado; la curva concreta de esta
-  página es nuestra, no una medición.</p>
+  el animal. Cada punto es una neurona y su brillo es su disparo real. El
+  matamoscas baja a velocidad constante, así que lo que ves caer y lo que ella
+  ve son la misma cosa: si le apuntas de lado, lo percibe distinto.</p>
+  <p><b>Y aprende de ti, de tres maneras.</b> Se <i>sensibiliza</i>: el susto sube
+  la respuesta de las sinapsis que llegan a la neurona gigante, y reacciona antes.
+  Cambia a <i>despegue corto</i>: con la neurona gigante metida, el salto es
+  explosivo —milisegundos— aunque peor dirigido; sin ella lo prepara con calma y
+  sale tarde. Y se acuerda de <i>por dónde le llegas</i>, para saltar al lado
+  contrario.</p>
+  <p>Los dos primeros están documentados en el animal. El tercero es modelo
+  nuestro. Nada de esto es backpropagation: no hay entrenamiento, hay plasticidad
+  en unas sinapsis concretas.</p>
   <p style="color:#6e7688">Lo aprendido se guarda sólo en tu navegador.</p>
-  <p class="links">
-    <a href="https://github.com/edreirbs/entrenamiento-redes-neuronales" target="_blank" rel="noopener">Código</a>
-    <a href="https://flywire.ai" target="_blank" rel="noopener">FlyWire</a>
-    <a href="https://www.nature.com/articles/s41586-024-07763-9" target="_blank" rel="noopener">Nature 2024</a>
-  </p>
   <div class="dlgbtns">
     <button id="closeAbout">Cerrar</button>
-    <button id="forget" class="ghost">Que la mosca olvide todo</button>
+    <button id="forget" class="ghost">Empezar con una mosca nueva</button>
   </div>
 </dialog>
 
