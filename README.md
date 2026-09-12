@@ -85,6 +85,22 @@ console.log(net.n, 'neuronas,', nSyn, 'sinapsis');
 "
 ```
 
+## Publicarlo en GitHub Pages
+
+Pages hay que encenderlo una vez a mano: el token de GitHub Actions no tiene
+permiso para crear el sitio (`Resource not accessible by integration`), sólo
+para desplegar en uno que ya exista. En **Settings → Pages**, cualquiera de las
+dos opciones sirve:
+
+- **Deploy from a branch** → rama `claude/como-hace-eso-la-gente-sywnpp`,
+  carpeta `/ (root)`. Es lo más directo: el sitio es estático y no necesita
+  compilarse. Queda publicado en un par de minutos y el flujo de Actions ni se
+  usa.
+- **GitHub Actions** → y luego volver a lanzar el flujo *Publicar en GitHub
+  Pages* desde la pestaña Actions.
+
+Queda en `https://edreirbs.github.io/entrenamiento-redes-neuronales/`.
+
 ## Correrlo localmente
 
 Son módulos ES, así que hace falta servirlo por HTTP (abrir el archivo
