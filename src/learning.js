@@ -22,16 +22,22 @@
 
 const KEY = 'mosca.v2';
 
-const FRESH = {
+/**
+ * Estado inicial. Es una FUNCIÓN a propósito: si fuera un objeto de módulo, el
+ * copiado superficial dejaría a todos los estados compartiendo el mismo arreglo
+ * de historial, y reiniciar no borraría nada.
+ */
+const fresca = () => ({
   gen: 1,          // generación actual
   kills: 0,        // cuántas has aplastado
   swats: 0,        // cuántos intentos llevas
   racha: 0,        // aciertos seguidos ahora mismo
   best: 0,         // tu mejor racha
   exp: 0,          // experiencia acumulada: lo que de verdad la hace difícil
+  hist: [],        // un registro por intento, para poder graficar la mejora
   dir: [0, 0],     // de dónde suelen venir los golpes, en coordenadas de mesa
   lastSeen: 0,
-};
+});
 
 /**
  * Cuánto sensibiliza cada tipo de encuentro. No todos enseñan lo mismo: un
@@ -47,8 +53,14 @@ const PESO = {
 };
 const EXP_MAX = 1.6;
 
+/** Cuántos intentos se guardan para la gráfica. */
+export const HIST_MAX = 60;
+
 /** Registra un encuentro. Todo golpe enseña algo; unos mucho más que otros. */
 export function aprender(s, ev) {
+  if (!s.hist) s.hist = [];
+  s.hist.push({ r: ev.reaccion ?? null, d: Math.round(ev.despegue), o: ev.muere ? 'k' : ev.cerca ? 'e' : 'f' });
+  if (s.hist.length > HIST_MAX) s.hist.shift();
   let d = PESO.intento;
   if (ev.reacciono) d += PESO.reaccion;
   if (ev.cerca) d += PESO.cerca;
@@ -98,13 +110,14 @@ export function load() {
   try {
     const raw = localStorage.getItem(KEY);
     if (raw) {
-      const s = { ...FRESH, ...JSON.parse(raw) };
+      const s = { ...fresca(), ...JSON.parse(raw) };
       // Partidas guardadas antes de que la experiencia se ponderara por evento.
       if (!s.exp) s.exp = s.kills * 0.028 + s.swats * 0.006;
+      if (!Array.isArray(s.hist)) s.hist = [];
       return s;
     }
   } catch { /* almacenamiento bloqueado: se juega con una mosca nueva */ }
-  return { ...FRESH };
+  return fresca();
 }
 
 export function save(s) {
@@ -114,5 +127,5 @@ export function save(s) {
 
 export function reset() {
   try { localStorage.removeItem(KEY); } catch { /* nada que borrar */ }
-  return { ...FRESH };
+  return fresca();
 }

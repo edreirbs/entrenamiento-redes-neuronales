@@ -35,6 +35,36 @@ body {
 .bar i { display: block; height: 100%; width: 0; background: var(--fly); border-radius: 2px; transition: width .7s cubic-bezier(.2,.8,.3,1); }
 .barlab { font-size: 10px; color: #5d6478; margin-top: 5px; letter-spacing: .04em; }
 
+/* ─── Panel de aprendizaje ─── */
+.stats {
+  position: fixed; left: 18px; bottom: 18px; z-index: 6; width: 296px;
+  background: rgba(13,14,19,.82); border: 1px solid #232733; border-radius: 12px;
+  padding: 12px 13px 11px; backdrop-filter: blur(7px);
+}
+.sthead { display: flex; justify-content: space-between; align-items: center; margin-bottom: 9px; }
+.sthead span { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--dim); }
+.sthead button {
+  appearance: none; cursor: pointer; font-family: inherit; font-size: 10px; letter-spacing: .08em;
+  background: none; border: 1px solid #2b3040; color: #6c7488; border-radius: 6px; padding: 3px 9px;
+  transition: all .18s;
+}
+.sthead button:hover { color: var(--hot); border-color: var(--hot); }
+.sthead button.armed { color: var(--hot); border-color: var(--hot); background: rgba(255,90,77,.12); }
+#chart { display: block; width: 100%; height: 116px; }
+.legend { display: flex; gap: 12px; margin: 7px 0 9px; }
+.legend span { display: flex; align-items: center; gap: 5px; font-size: 9.5px; color: #666d80; }
+.legend i { width: 8px; height: 8px; border-radius: 2px; display: block; }
+.legend .lr { background: #2fe0c0; }
+.legend .ld { background: #d9a441; }
+.legend .lx { background: #ff5a4d; }
+.strow { display: flex; align-items: baseline; gap: 8px; font-size: 11px; color: var(--dim); padding: 2.5px 0; }
+.strow span { min-width: 62px; }
+.strow b { font-family: var(--mono); font-size: 14px; color: var(--ink); }
+.strow em { font-style: normal; font-size: 10.5px; color: #5f6678; }
+.strow em.good { color: var(--fly); }
+.strow.big { border-top: 1px solid #1e222c; margin-top: 5px; padding-top: 7px; }
+.strow.big b { font-size: 19px; }
+
 /* ─── Mensajes ─── */
 .flash {
   position: fixed; left: 50%; top: 26%; transform: translateX(-50%);
@@ -118,6 +148,13 @@ dialog button {
 dialog button.ghost { background: none; color: var(--dim); }
 dialog button.ghost:hover { color: var(--hot); border-color: var(--hot); }
 
+@media (max-width: 900px) {
+  .stats { width: 236px; left: 12px; bottom: 12px; padding: 10px 11px 9px; }
+  #chart { height: 88px; }
+  .strow { font-size: 10px; }
+  .strow b { font-size: 12px; }
+  .strow.big b { font-size: 16px; }
+}
 @media (max-width: 760px) {
   #stage { cursor: default; }
   .kills b { font-size: 30px; }

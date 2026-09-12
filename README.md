@@ -66,6 +66,17 @@ El arco resultante, medido contra un matamoscas de 270 ms:
 La zona interesante es la generación 6, donde se decide por márgenes de uno a
 cinco milisegundos.
 
+## Qué se ve mientras juegas
+
+Un panel abajo a la izquierda grafica cada intento: una barra apilada con lo que
+tardó en reaccionar (turquesa) y lo que tardó en despegar (ámbar), contra una
+línea roja en los 270 ms en que llega el matamoscas. Las primeras barras la
+rebasan —y por eso muere—; conforme aprende se van quedando debajo. Abajo van
+los dos números con su mejora desde el primer intento, y el margen actual.
+
+El botón **reiniciar** del panel borra todo lo aprendido en dos toques, y
+devuelve una mosca de generación 1 sin experiencia.
+
 ## Estructura
 
 ```

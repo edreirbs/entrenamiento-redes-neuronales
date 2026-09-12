@@ -147,7 +147,10 @@ function resolve() {
 
   arena.impact(s.x, s.z);
   Aprende.apuntar(mem, s.x - s.flyAt.x, s.z - s.flyAt.z);
-  Aprende.aprender(mem, { reacciono: s.reaction !== null, cerca: cerca || escapo, muere });
+  Aprende.aprender(mem, {
+    reacciono: s.reaction !== null, cerca: cerca || escapo, muere,
+    reaccion: s.reaction, despegue: s.despegue,
+  });
   mem.swats += 1;
 
   if (muere) {
@@ -175,6 +178,7 @@ function resolve() {
   aplicaAprendizaje();
   Aprende.save(mem);
   pintaHud(s.reaction);
+  pintaPanel();
 }
 
 function nuevaMosca() {
@@ -202,6 +206,104 @@ function pintaHud(reaction) {
         : p < 0.21 ? 'ya casi no la alcanzas'
           : p < 0.36 ? 'reacciona antes y despega en corto'
             : 'prácticamente intocable';
+}
+
+// ─── Gráfica de aprendizaje ───────────────────────────────────────────
+// Cada barra es un intento: abajo lo que tardó en reaccionar, encima lo que
+// tardó en despegar. La línea roja es el momento en que llega el matamoscas.
+// Cuando la barra completa baja de esa línea, deja de ser matable.
+function drawChart() {
+  const cv = $('chart');
+  const g = cv.getContext('2d');
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  const W = cv.clientWidth, H = cv.clientHeight;
+  if (!W || !H) return;
+  if (cv.width !== Math.round(W * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  g.clearRect(0, 0, W, H);
+
+  const MAX = 380;
+  const TOP = 14;               // espacio para la etiqueta de la línea
+  const y = (ms) => H - 14 - (ms / MAX) * (H - 14 - TOP);
+  const hist = mem.hist || [];
+  const n = Math.max(14, hist.length);
+  const bw = W / n;
+
+  // Línea del golpe: lo que hay que bajar para sobrevivir.
+  g.fillStyle = 'rgba(255,90,77,.72)';
+  g.font = '9px ui-monospace, monospace';
+  g.textAlign = 'right';
+  g.fillText(`${SWAT_MS} ms · llega el golpe`, W, 9);
+  g.textAlign = 'left';
+  g.strokeStyle = 'rgba(255,90,77,.75)';
+  g.setLineDash([4, 3]); g.lineWidth = 1.2;
+  g.beginPath(); g.moveTo(0, y(SWAT_MS)); g.lineTo(W, y(SWAT_MS)); g.stroke();
+  g.setLineDash([]);
+
+  if (!hist.length) {
+    g.fillStyle = '#4a5164';
+    g.font = '11px system-ui, sans-serif';
+    g.fillText('Pégale una vez para empezar a medirla.', 4, H / 2);
+    return;
+  }
+
+  // Barras apiladas.
+  hist.forEach((h, i) => {
+    const x = i * bw, w = Math.max(1.5, bw - 1.6);
+    if (h.r === null) {
+      g.fillStyle = 'rgba(255,90,77,.30)';
+      g.fillRect(x, y(SWAT_MS), w, H - 14 - y(SWAT_MS));
+      return;
+    }
+    const total = h.r + h.d;
+    g.fillStyle = '#2fe0c0';
+    g.fillRect(x, y(h.r), w, H - 14 - y(h.r));
+    g.fillStyle = total > SWAT_MS ? '#ff5a4d' : '#d9a441';
+    g.fillRect(x, y(total), w, y(h.r) - y(total));
+  });
+
+  // Tendencia del total.
+  g.strokeStyle = 'rgba(238,240,246,.5)'; g.lineWidth = 1.4;
+  g.beginPath();
+  let started = false;
+  hist.forEach((h, i) => {
+    if (h.r === null) return;
+    const px = i * bw + Math.max(1.5, bw - 1.6) / 2;
+    const py = y(h.r + h.d);
+    started ? g.lineTo(px, py) : (g.moveTo(px, py), started = true);
+  });
+  if (started) g.stroke();
+
+  // Tira de resultados.
+  hist.forEach((h, i) => {
+    g.fillStyle = h.o === 'k' ? '#ff5a4d' : h.o === 'e' ? '#2fe0c0' : '#39405a';
+    g.fillRect(i * bw, H - 8, Math.max(1.5, bw - 1.6), 4);
+  });
+}
+
+function pintaPanel() {
+  drawChart();
+  const hist = (mem.hist || []).filter((h) => h.r !== null);
+  const set = (id, txt, delta, mejor) => {
+    $(id).textContent = txt;
+    const e = $(delta);
+    if (!e) return;
+    e.textContent = mejor === null ? '' : mejor === 0 ? 'igual que al inicio'
+      : `${mejor > 0 ? '−' : '+'}${Math.abs(Math.round(mejor))} ms desde el inicio`;
+    e.className = mejor > 0 ? 'good' : '';
+  };
+  if (!hist.length) {
+    set('sReact', '—', 'dReact', null);
+    set('sTake', '—', 'dTake', null);
+    $('sMargin').textContent = '—';
+    return;
+  }
+  const a = hist[0], z = hist[hist.length - 1];
+  set('sReact', `${Math.round(z.r)} ms`, 'dReact', a.r - z.r);
+  set('sTake', `${Math.round(z.d)} ms`, 'dTake', a.d - z.d);
+  const m = Math.round(SWAT_MS - z.r - z.d);
+  $('sMargin').textContent = `${m > 0 ? '+' : ''}${m} ms`;
+  $('sMargin').style.color = m > 0 ? 'var(--fly)' : 'var(--hot)';
 }
 
 function flash(text, kind) {
@@ -236,19 +338,33 @@ function intro() {
   };
 }
 
-$('info').onclick = () => $('about').showModal();
-$('closeAbout').onclick = () => $('about').close();
-$('forget').onclick = () => {
+const reiniciar = () => {
   mem = Aprende.reset();
   aplicaAprendizaje();
   $('react').textContent = '—';
   pintaHud(null);
+  pintaPanel();
   nuevaMosca();
-  $('about').close();
+  $('hint').innerHTML = 'Mosca nueva, sin nada aprendido. Generación 1.';
 };
+
+let armado = 0;
+$('reset').onclick = () => {
+  const b = $('reset');
+  if (armado) { clearTimeout(armado); armado = 0; b.classList.remove('armed'); b.textContent = 'reiniciar'; reiniciar(); return; }
+  b.classList.add('armed'); b.textContent = '¿seguro?';
+  armado = setTimeout(() => { armado = 0; b.classList.remove('armed'); b.textContent = 'reiniciar'; }, 3200);
+};
+
+addEventListener('resize', pintaPanel);
+
+$('info').onclick = () => $('about').showModal();
+$('closeAbout').onclick = () => $('about').close();
+$('forget').onclick = () => { reiniciar(); $('about').close(); };
 
 aplicaAprendizaje();
 pintaHud(null);
+pintaPanel();
 intro();
 
 window.__dbg = { arena, escape, fly, mem: () => mem, slam };
