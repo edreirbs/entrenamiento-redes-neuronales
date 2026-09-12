@@ -10,9 +10,9 @@
  */
 import {
   buildEscapeCircuit, retinaDrive, loomingFrame, GRID_W, GRID_H,
-} from './circuits.js?v=6';
-import { Arena, HOVER_Y, PAD_HALF, BOUNDS } from './scene3d.js?v=6';
-import * as Aprende from './learning.js?v=6';
+} from './circuits.js?v=7';
+import { Arena, HOVER_Y, PAD_HALF, BOUNDS } from './scene3d.js?v=7';
+import * as Aprende from './learning.js?v=7';
 
 const $ = (id) => document.getElementById(id);
 
@@ -27,11 +27,25 @@ const FOCAL = 1.83;
 // una mosca con toda la experiencia si además está agotada, y por encima de
 // ~330 ms ni la generación 1 es matable.
 const SWAT_MIN = 190, SWAT_MAX = 330, SWAT_NEUTRO = 270;
-const V_LENTA = 3, V_RAPIDA = 12;      // unidades de mesa por segundo
+// Ritmo: es la señal principal, porque es la que se siente al jugar. Clics
+// seguidos → golpe rápido; clics espaciados → golpe lento.
+//
+// El umbral de "rápido" está anclado a lo que de verdad se puede hacer: no se
+// puede volver a golpear hasta que el matamoscas cae y vuelve a subir, o sea
+// SWAT_MIN + LIFT_MS ≈ 390 ms. Pedir intervalos más cortos que eso hacía que la
+// mecánica no se activara nunca.
+const RITMO_RAPIDO = 480, RITMO_LENTO = 2000;   // ms entre golpes
+// Manotazo: señal secundaria. Los umbrales salen de medir gestos reales — un
+// manotazo fuerte de 700 px en 60 ms da unos 9.5 u/s, y un ajuste fino 0.2.
+// El umbral anterior (12 u/s) no lo alcanzaba ningún gesto humano, así que la
+// mecánica nunca se activaba.
+const V_LENTA = 0.8, V_RAPIDA = 7;
 // Un manotazo rápido va peor apuntado. Además de ser lo que pasa de verdad,
 // evita que "siempre rapidísimo" sea la única estrategia.
 const DESVIO_MAX = 0.15;
-const LIFT_MS = 340;             // y lo que tarda en volver a subir
+// Subida rápida a propósito: es lo que marca cada cuánto puedes volver a
+// golpear, y por lo tanto qué tan rápido puedes llegar a pegar.
+const LIFT_MS = 200;
 const MOTOR_DELAY = 5;           // DNp01 → músculo
 
 const escape = buildEscapeCircuit();
@@ -82,6 +96,7 @@ function loop(now) {
   if (swing) stepSwing(now);
   else arena.swatter.position.set(aim.x, HOVER_Y + Math.sin(now / 700) * 0.03, aim.z);
   arena.reticle.position.set(aim.x, 0.008, aim.z);
+  if (!swing) pintaGolpe();
 
   fly.paintBrain(escape.net.trace);
   arena.render(dt);
@@ -92,18 +107,21 @@ requestAnimationFrame(loop);
 // ─── El golpe ─────────────────────────────────────────────────────────
 function slam() {
   if (!playing || swing) return;
-  fatiga = Math.min(1, fatiga + Aprende.FATIGA_POR_GOLPE);
+  const swat = calculaSwat();
+  // Un golpe rápido y ligero habitúa menos que uno lento y aparatoso. Sin esto,
+  // machacar daría golpe rápido Y fatiga a la vez: doble premio por el mismo
+  // acto, y el juego se convertiría en un botón de matar garantizado.
+  const lentitud = (swat - SWAT_MIN) / (SWAT_MAX - SWAT_MIN);
+  fatiga = Math.min(1, fatiga + Aprende.FATIGA_POR_GOLPE * (0.3 + 0.7 * lentitud));
   escape.setGain(Aprende.gananciaCon(mem, fatiga));
   pintaFatiga();
   const lum = new Float32Array(P), prev = new Float32Array(P);
   const I = new Float32Array(escape.net.n);
   escape.net.reset();
-
-  const swat = calculaSwat();
-  // Cuanto más rápido el manotazo, menos control: se dispersa el punto de
-  // impacto. Se aplica al matamoscas de verdad, no sólo al cálculo, para que
-  // se vea caer donde cae.
-  const prisa = (SWAT_MAX - swat) / (SWAT_MAX - SWAT_MIN);
+  // Cuanto más rápido el golpe, menos control: se dispersa el punto de impacto.
+  // Se aplica al matamoscas de verdad, no sólo al cálculo, para que se vea caer
+  // donde cae.
+  const prisa = 1 - lentitud;
   const ang = Math.random() * 6.2832;
   const rad = DESVIO_MAX * prisa * Math.sqrt(Math.random());
   const px = Math.max(-BOUNDS.x, Math.min(BOUNDS.x, aim.x + Math.cos(ang) * rad));
@@ -119,6 +137,7 @@ function slam() {
   ultimoGolpe = { t: performance.now(), x: aim.x, z: aim.z };
   // Primer fotograma de referencia, con el matamoscas todavía arriba.
   proyecta(prev, HOVER_Y, swing.x, swing.z);
+  $('swatms').textContent = `${swat} ms`;
   $('hint').textContent = '';
 }
 
@@ -249,6 +268,20 @@ function nuevaMosca() {
 }
 
 function aplicaAprendizaje() { escape.setGain(Aprende.gananciaCon(mem, fatiga)); }
+
+/**
+ * Muestra qué tan fuerte saldría el golpe si golpearas AHORA. Sin esto la
+ * mecánica es invisible: el jugador no puede relacionar lo que hace con lo que
+ * pasa, y parece que el matamoscas siempre baja igual.
+ */
+function pintaGolpe() {
+  const k = fuerzaGolpe();
+  const swat = k == null ? SWAT_NEUTRO : Math.round(SWAT_MAX + k * (SWAT_MIN - SWAT_MAX));
+  const f = (SWAT_MAX - swat) / (SWAT_MAX - SWAT_MIN);
+  $('swatbar').style.width = `${Math.round(12 + f * 88)}%`;
+  $('swatbar').style.background = f > 0.66 ? 'var(--hot)' : f > 0.33 ? '#d9a441' : 'var(--fly)';
+  $('swatms').textContent = `${swat} ms`;
+}
 
 function pintaFatiga() {
   $('fat').style.width = `${Math.round(fatiga * 100)}%`;
@@ -385,23 +418,16 @@ const move = (e) => {
 };
 
 /**
- * Velocidad de la mano, en unidades de mesa por segundo.
+ * Velocidad del manotazo, en unidades de mesa por segundo. Es la señal
+ * secundaria: mide el recorrido del puntero justo antes del clic.
  *
- * En escritorio sale del recorrido del puntero en los últimos ~120 ms. En
- * celular no hay hover, así que se mide entre este toque y el anterior: es la
- * misma magnitud muestreada en dos puntos.
- *
- * Que sea distancia/tiempo y no ritmo de clic es deliberado: martillear en el
- * mismo sitio da distancia cero, o sea golpe lento. Si se premiara el ritmo,
- * machacar subiría la fatiga Y aceleraría el golpe, y el juego se volvería un
- * botón de matar garantizado.
+ * Se toma la velocidad MÁXIMA de la ventana y no la del último tramo, porque
+ * quien da un manotazo frena justo antes de soltar el botón; medir sólo la cola
+ * daría "lento" siempre.
  */
 function velocidadMano() {
   const ahora = performance.now();
-  const recientes = rastro.filter((m) => ahora - m.t < 200);
-  // Se toma la velocidad MÁXIMA de la ventana, no la del último tramo: quien
-  // da un manotazo suele frenar justo antes de soltar el clic, y medir sólo la
-  // cola daría "lento" siempre.
+  const recientes = rastro.filter((m) => ahora - m.t < 260);
   let vmax = 0;
   for (let i = 1; i < recientes.length; i++) {
     const a = recientes[i - 1], b = recientes[i];
@@ -409,21 +435,31 @@ function velocidadMano() {
     if (dt < 0.008) continue;
     vmax = Math.max(vmax, Math.hypot(b.x - a.x, b.z - a.z) / dt);
   }
-  if (vmax > 0) return vmax;
+  return vmax;
+}
+
+/** 0 = lo más lento posible, 1 = lo más rápido. Combina ritmo y manotazo. */
+function fuerzaGolpe() {
+  // Ritmo: cuánto tardaste desde el golpe anterior.
+  let kRitmo = null;
   if (ultimoGolpe) {
-    const dt = (ahora - ultimoGolpe.t) / 1000;
-    if (dt > 0.05 && dt < 3) return Math.hypot(aim.x - ultimoGolpe.x, aim.z - ultimoGolpe.z) / dt;
+    const dt = performance.now() - ultimoGolpe.t;
+    kRitmo = 1 - (dt - RITMO_RAPIDO) / (RITMO_LENTO - RITMO_RAPIDO);
+    kRitmo = Math.max(0, Math.min(1, kRitmo));
   }
-  // Hubo movimiento, pero ya pasó: la mano está quieta apuntando con calma.
-  // Eso es un golpe lento, no una ausencia de señal.
-  if (rastro.length >= 2) return 0;
-  return null;                       // primer clic de la sesión: neutro
+  // Manotazo: qué tan rápido venía la mano.
+  const v = velocidadMano();
+  const kMano = Math.max(0, Math.min(1, (v - V_LENTA) / (V_RAPIDA - V_LENTA)));
+
+  // Manda la más fuerte de las dos: un manotazo aislado cuenta aunque sea el
+  // primer golpe, y machacar cuenta aunque no muevas el ratón.
+  if (kRitmo == null) return kMano > 0 ? kMano : null;
+  return Math.max(kRitmo, kMano);
 }
 
 function calculaSwat() {
-  const v = velocidadMano();
-  if (v == null) return SWAT_NEUTRO;
-  const k = Math.max(0, Math.min(1, (v - V_LENTA) / (V_RAPIDA - V_LENTA)));
+  const k = fuerzaGolpe();
+  if (k == null) return SWAT_NEUTRO;          // primer golpe, sin nada que medir
   return Math.round(SWAT_MAX + k * (SWAT_MIN - SWAT_MAX));
 }
 cv.addEventListener('pointermove', move);
@@ -442,6 +478,7 @@ function intro() {
     <button class="btn" id="go">${veterana ? 'Seguir' : 'Empezar'}</button>`;
   $('go').onclick = () => {
     $('veil').classList.add('hide');
+    document.body.classList.add('playing');
     playing = true;
     $('hint').innerHTML = 'Apunta y pégale.';
   };
@@ -479,4 +516,8 @@ pintaFatiga();
 pintaPanel();
 intro();
 
-window.__dbg = { arena, escape, fly, mem: () => mem, slam, fatiga: () => fatiga };
+window.__dbg = {
+  arena, escape, fly, slam,
+  mem: () => mem, fatiga: () => fatiga,
+  velocidad: () => velocidadMano(), swatPrevisto: () => calculaSwat(),
+};

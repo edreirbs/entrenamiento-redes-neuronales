@@ -21,17 +21,32 @@ visual como una cámara estenopeica: el radio depende de la altura y el centro s
 desplaza si el golpe no viene justo de arriba. Por eso apuntarle de lado no lo
 percibe igual.
 
-**Y baja a la velocidad de tu mano.** Se mide cuánto recorrió el punto de mira
-en los 200 ms previos al golpe, tomando la velocidad máxima de esa ventana —
-quien da un manotazo frena justo antes de soltar el clic, y medir sólo la cola
-daría "lento" siempre. Un manotazo llega en 190 ms y un golpe apuntado con calma
-en 330, que es la diferencia entre alcanzarla y no. A cambio, mientras más
-rápido, peor la puntería.
+**Y baja a la velocidad a la que juegas.** La señal principal es el **ritmo**:
+cuánto tardaste desde el golpe anterior. Clics seguidos dan un matamoscas de
+190 ms; golpes espaciados, de 330. Como señal secundaria está el manotazo — la
+velocidad máxima del puntero en los 260 ms previos, que cuenta aunque sea el
+primer golpe. Manda la más fuerte de las dos.
 
-Se mide **distancia recorrida**, no ritmo de clics, y eso es deliberado:
-martillear en el mismo sitio da distancia cero, o sea golpe lento. Si se premiara
-el ritmo, machacar subiría la fatiga *y* aceleraría el golpe — doble recompensa
-por el mismo acto, y el juego se volvería un botón de matar garantizado.
+Las dos escalas están ancladas a lo que de verdad se puede hacer, que fue donde
+falló el primer intento:
+
+- **El ritmo no puede bajar del ciclo del golpe.** No se puede volver a pegar
+  hasta que el matamoscas cae y sube, o sea `SWAT_MIN + LIFT_MS ≈ 390 ms`. El
+  umbral de "rápido" está en 480 ms; pedir menos hacía que la mecánica no se
+  activara nunca.
+- **El manotazo tiene un techo humano.** Medido: un ajuste fino da 0.2 u/s, un
+  movimiento normal 1.3, y un manotazo fuerte de 700 px en 60 ms llega a 9.5. El
+  primer umbral estaba en 12 u/s — inalcanzable, así que el golpe salía siempre
+  lento.
+
+**El intercambio:** un golpe rápido va peor apuntado (se dispersa el punto de
+impacto) y habitúa menos a la mosca, porque es un estímulo flojo. Sin eso,
+machacar daría golpe rápido *y* fatiga a la vez, doble premio por el mismo acto.
+Medido contra una mosca totalmente entrenada: machacando la matas 5 de cada 14
+veces, y la fatiga se queda en 0.64 en vez de llegar a 1.
+
+Un indicador al pie muestra en vivo qué tan fuerte saldría el golpe si pegaras
+ahora. Sin él la mecánica es invisible.
 
 **Nuestro: la dinámica.** Un conectoma es anatomía estática y no dice la fuerza de
 cada sinapsis ni las constantes de tiempo. Esos parámetros se ajustaron midiendo

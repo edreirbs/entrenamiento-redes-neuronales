@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Mátala si puedes</title>
 <meta name="description" content="Intenta aplastar una mosca cuyo cerebro está simulado neurona por neurona. Aprende de cada intento tuyo.">
-<link rel="stylesheet" href="assets/style.css?v=6">
+<link rel="stylesheet" href="assets/style.css?v=7">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪰</text></svg>">
 </head>
 <body>
@@ -46,9 +46,15 @@
 <div class="flash" id="flash"></div>
 <div class="hint" id="hint"></div>
 
+<div class="swatmeter" id="swatmeter">
+  <span class="lab">tu golpe</span>
+  <i><b id="swatbar"></b></i>
+  <span class="ms" id="swatms">—</span>
+</div>
+
 <div class="controls">
   <span class="c"><kbd>mover</kbd> apuntar</span>
-  <span class="c"><kbd>clic</kbd> golpear</span>
+  <span class="c"><kbd>clic</kbd> golpear · más seguidos, más rápido</span>
   <span class="c tap">en celular, toca donde quieras pegarle</span>
 </div>
 
@@ -94,6 +100,6 @@
   </div>
 </dialog>
 
-<script type="module" src="src/main.js?v=6"></script>
+<script type="module" src="src/main.js?v=7"></script>
 </body>
 </html>

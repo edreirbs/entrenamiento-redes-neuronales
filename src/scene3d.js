@@ -9,7 +9,7 @@
  * velocidad de la mano del jugador (ver `calculaSwat` en main.js).
  */
 import * as THREE from '../vendor/three.module.js';
-import { Fly3D } from './fly3d.js?v=6';
+import { Fly3D } from './fly3d.js?v=7';
 
 export const ACCENT = 0x2fe0c0;
 export const HOVER_Y = 1.55;
