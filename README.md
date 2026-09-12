@@ -42,6 +42,18 @@ baja de 105 ms a 30 ms.
 **Sesgo direccional** — *modelo nuestro, no medición*. Se acuerda de por dónde le
 suelen llegar los golpes y salta al lado contrario.
 
+**Aprende de todo golpe, pero no todos enseñan igual.** Un manotazo al otro lado
+de la mesa apenas lo registra; uno que le pasó rozando y del que tuvo que salir
+huyendo es exactamente el estímulo que sensibiliza la vía de escape. Cuántos
+golpes de cada tipo hacen falta para volverla intocable:
+
+| encuentro | golpes |
+|---|---|
+| la aplastaste | 7 |
+| le pasó rozando y escapó | 12 |
+| lejano, pero llegó a reaccionar | 24 |
+| lejano, ni lo vio | 84 |
+
 El arco resultante, medido contra un matamoscas de 270 ms:
 
 | generación | reacción | despegue | total | ¿escapa? |

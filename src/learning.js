@@ -28,21 +28,45 @@ const FRESH = {
   swats: 0,        // cuántos intentos llevas
   racha: 0,        // aciertos seguidos ahora mismo
   best: 0,         // tu mejor racha
+  exp: 0,          // experiencia acumulada: lo que de verdad la hace difícil
   dir: [0, 0],     // de dónde suelen venir los golpes, en coordenadas de mesa
   lastSeen: 0,
 };
 
+/**
+ * Cuánto sensibiliza cada tipo de encuentro. No todos enseñan lo mismo: un
+ * manotazo al otro lado de la mesa apenas lo registra, mientras que uno que
+ * pasó rozándole y del que tuvo que salir huyendo es exactamente el estímulo
+ * que sube la respuesta de la vía de escape.
+ */
+const PESO = {
+  intento: 0.004,   // cualquier golpe, aunque ni lo haya visto
+  reaccion: 0.010,  // la neurona gigante llegó a dispararse
+  cerca: 0.016,     // le pasó encima: amenaza real
+  muerte: 0.026,    // la generación anterior no la contó
+};
+const EXP_MAX = 1.6;
+
+/** Registra un encuentro. Todo golpe enseña algo; unos mucho más que otros. */
+export function aprender(s, ev) {
+  let d = PESO.intento;
+  if (ev.reacciono) d += PESO.reaccion;
+  if (ev.cerca) d += PESO.cerca;
+  if (ev.muere) d += PESO.muerte;
+  s.exp = Math.min(EXP_MAX, (s.exp || 0) + d);
+  return d;
+}
+
 // Ganancia de la convergencia sobre DNp01: empieza floja y se sensibiliza.
 const GAIN_MIN = 0.60, GAIN_MAX = 2.20;
-const GAIN_POR_MUERTE = 0.028, GAIN_POR_INTENTO = 0.006;
+
 
 // Tiempo entre el disparo de la neurona gigante y despejar la zona de impacto.
 const DESPEGUE_LARGO = 105, DESPEGUE_CORTO = 30;
 
 /** Cuánto ha aprendido, 0..1. Es lo que dibuja la barra. */
 export function progreso(s) {
-  const bruto = s.kills * GAIN_POR_MUERTE + s.swats * GAIN_POR_INTENTO;
-  return Math.min(1, bruto / (GAIN_MAX - GAIN_MIN));
+  return Math.min(1, (s.exp || 0) / EXP_MAX);
 }
 
 export function ganancia(s) {
@@ -73,7 +97,12 @@ export function apuntar(s, dx, dz) {
 export function load() {
   try {
     const raw = localStorage.getItem(KEY);
-    if (raw) return { ...FRESH, ...JSON.parse(raw) };
+    if (raw) {
+      const s = { ...FRESH, ...JSON.parse(raw) };
+      // Partidas guardadas antes de que la experiencia se ponderara por evento.
+      if (!s.exp) s.exp = s.kills * 0.028 + s.swats * 0.006;
+      return s;
+    }
   } catch { /* almacenamiento bloqueado: se juega con una mosca nueva */ }
   return { ...FRESH };
 }

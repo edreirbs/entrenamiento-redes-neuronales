@@ -10,7 +10,7 @@
 import * as THREE from '../vendor/three.module.js';
 
 const BODY = 0x3f3f4a;
-const HEAD_Z = 0.30;   // posición de la cabeza sobre el eje del cuerpo
+const HEAD_Z = 0.29;   // el cerebro va detrás de los ojos, no delante
 const BASE_Y = 0.185;  // altura del cuerpo cuando camina
 
 function geo0(pos, col) {
@@ -46,105 +46,220 @@ export class Fly3D {
     if (layout) this.setBrain(layout, 'escape');
   }
 
+  /**
+   * Pinta las rayas sobre una textura en vez de pegarles geometría encima.
+   * Con SphereGeometry rotada +90° en X los polos quedan sobre el eje del
+   * cuerpo, u recorre la circunferencia y la línea dorsal cae justo en
+   * u = 0.75. Por eso las bandas van centradas ahí.
+   */
+  static quitinaTex(base, rayas, bandas) {
+    const cv = document.createElement('canvas');
+    cv.width = 256; cv.height = 128;
+    const g = cv.getContext('2d');
+    g.fillStyle = base; g.fillRect(0, 0, 256, 128);
+    for (const [u, ancho, color, v0, v1] of rayas) {
+      g.fillStyle = color;
+      g.fillRect(u * 256 - ancho * 128, v0 * 128, ancho * 256, (v1 - v0) * 128);
+    }
+    for (const [v, alto, color] of bandas) {
+      g.fillStyle = color;
+      g.fillRect(0, v * 128 - alto * 64, 256, alto * 128);
+    }
+    // Grano: la quitina no es plástico liso.
+    for (let i = 0; i < 2600; i++) {
+      g.fillStyle = `rgba(0,0,0,${Math.random() * 0.10})`;
+      g.fillRect(Math.random() * 256, Math.random() * 128, 1.4, 1.4);
+    }
+    const t = new THREE.CanvasTexture(cv);
+    t.anisotropy = 4;
+    return t;
+  }
+
+  /** Retícula de omatidios: sin ella los ojos parecen dos canicas de plástico. */
+  static omatidiosTex() {
+    const cv = document.createElement('canvas');
+    cv.width = cv.height = 256;
+    const g = cv.getContext('2d');
+    g.fillStyle = '#7c1a1e'; g.fillRect(0, 0, 256, 256);
+    const paso = 7.2;
+    for (let fila = 0; fila * paso * 0.87 < 262; fila++) {
+      for (let col = 0; col * paso < 262; col++) {
+        const x = col * paso + (fila % 2 ? paso / 2 : 0);
+        const y = fila * paso * 0.87;
+        const t = 0.72 + Math.random() * 0.3;
+        g.fillStyle = `rgba(${Math.round(168 * t)},${Math.round(40 * t)},${Math.round(44 * t)},1)`;
+        g.beginPath(); g.arc(x, y, paso * 0.40, 0, 6.2832); g.fill();
+      }
+    }
+    const t = new THREE.CanvasTexture(cv);
+    t.anisotropy = 4;
+    return t;
+  }
+
   build() {
-    // Todo el cuerpo es translúcido y no escribe profundidad: así el circuito
-    // de adentro se ve a través de él, que es de lo que trata la pieza.
-    const shell = (opacity) => new THREE.MeshStandardMaterial({
-      color: BODY, roughness: 0.34, metalness: 0.55,
+    // Proporciones de mosca doméstica: cuerpo rechoncho, tórax ancho y
+    // jorobado, abdomen corto y romo, y una cabeza que es casi toda ojo.
+    const quitina = (color, opacity) => new THREE.MeshStandardMaterial({
+      color, roughness: 0.38, metalness: 0.35,
       transparent: true, opacity, depthWrite: false,
     });
-    const body = shell(0.80);
-    const bodyGlow = shell(0.58);
+    const torax = quitina(0x6a6a76, 0.9);
+    torax.map = Fly3D.quitinaTex('#6a6a76', [
+      [0.705, 0.020, '#20202a', 0.12, 0.9], [0.737, 0.018, '#20202a', 0.12, 0.9],
+      [0.767, 0.018, '#20202a', 0.12, 0.9], [0.799, 0.020, '#20202a', 0.12, 0.9],
+    ], []);
+    const abdomen = quitina(0xb08a52, 0.9);
+    abdomen.map = Fly3D.quitinaTex('#b08a52', [
+      [0.75, 0.115, '#4a3a20', 0.0, 1.0],
+    ], [[0.34, 0.035, '#4a3a20'], [0.56, 0.035, '#4a3a20'], [0.76, 0.035, '#4a3a20']]);
+    const oscuro = new THREE.MeshStandardMaterial({
+      color: 0x1e1e24, roughness: 0.5, metalness: 0.3,
+      transparent: true, opacity: 0.92, depthWrite: false,
+    });
 
-    // ── Abdomen, con sus anillos.
-    const abd = new THREE.Mesh(new THREE.SphereGeometry(0.17, 24, 18), body);
-    abd.scale.set(0.92, 0.86, 1.75);
-    abd.position.z = -0.40;
+    // ── Abdomen: corto, ancho y terminado en punta roma.
+    const abdGeo = new THREE.SphereGeometry(0.20, 30, 22);
+    abdGeo.rotateX(Math.PI / 2);
+    const abd = new THREE.Mesh(abdGeo, abdomen);
+    abd.scale.set(0.95, 0.80, 1.16);
+    abd.position.z = -0.37;
     abd.castShadow = true;
     this.group.add(abd);
-    for (let i = 0; i < 3; i++) {
-      const r = 0.150 - i * 0.026;
-      const ring = new THREE.Mesh(new THREE.TorusGeometry(r, 0.009, 8, 24), body);
-      ring.position.z = -0.30 - i * 0.155;
-      ring.scale.set(0.94, 0.87, 1);   // sigue el perfil del abdomen, no lo desborda
-      this.group.add(ring);
-    }
 
-    // ── Tórax.
-    const thx = new THREE.Mesh(new THREE.SphereGeometry(0.20, 24, 18), bodyGlow);
-    thx.scale.set(1, 0.95, 1.25);
+    // ── Tórax: lo más voluminoso del bicho.
+    const thxGeo = new THREE.SphereGeometry(0.215, 30, 22);
+    thxGeo.rotateX(Math.PI / 2);
+    const thx = new THREE.Mesh(thxGeo, torax);
+    thx.scale.set(0.96, 0.88, 1.02);
     thx.castShadow = true;
     this.group.add(thx);
 
-    // ── Cabeza, translúcida para que se vea el cerebro.
+    // Escudete: la placa triangular del final del tórax.
+    const esc = new THREE.Mesh(new THREE.SphereGeometry(0.105, 16, 12), torax);
+    esc.scale.set(1, 0.55, 0.7);
+    esc.position.set(0, 0.10, -0.175);
+    this.group.add(esc);
+
+    // ── Cabeza. Traslúcida a propósito: adentro va el circuito.
     this.head = new THREE.Mesh(
-      new THREE.SphereGeometry(0.172, 28, 20),
+      new THREE.SphereGeometry(0.185, 28, 20),
       new THREE.MeshStandardMaterial({
-        color: 0x20202a, roughness: 0.25, metalness: 0.3,
-        transparent: true, opacity: 0.30, depthWrite: false,
+        color: 0x2a2a32, roughness: 0.3, metalness: 0.25,
+        transparent: true, opacity: 0.26, depthWrite: false,
       }),
     );
-    this.head.scale.set(1.12, 1, 0.86);
-    this.head.position.z = 0.30;
+    this.head.scale.set(1.04, 0.92, 0.78);
+    this.head.position.z = 0.335;
     this.group.add(this.head);
 
-    // ── Ojos compuestos: en una mosca real se comen casi toda la cabeza.
+    // ── Ojos compuestos: enormes, rojos y casi tocándose en la frente.
     const eyeMat = new THREE.MeshStandardMaterial({
-      color: EYE, roughness: 0.22, metalness: 0.55,
-      emissive: 0x3a070c, emissiveIntensity: 0.35,
+      map: Fly3D.omatidiosTex(), color: 0xffffff,
+      roughness: 0.46, metalness: 0.18,
+      emissive: 0x33060a, emissiveIntensity: 0.35,
     });
     for (const s of [-1, 1]) {
-      const eye = new THREE.Mesh(new THREE.SphereGeometry(0.105, 24, 18), eyeMat);
-      eye.scale.set(0.82, 1.2, 1.05);
-      eye.position.set(s * 0.098, 0.012, 0.302);
+      const eye = new THREE.Mesh(new THREE.SphereGeometry(0.134, 28, 22), eyeMat);
+      eye.scale.set(0.78, 0.98, 0.94);
+      eye.position.set(s * 0.096, 0.028, 0.330);
       eye.castShadow = true;
       this.group.add(eye);
     }
+    // Trompa: lo que usa para sorber la fruta pasada.
+    const tromp = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.052, 0.10, 10), oscuro);
+    tromp.position.set(0, -0.085, 0.40);
+    tromp.rotation.x = 0.5;
+    this.group.add(tromp);
+    for (const s of [-1, 1]) {
+      const ant = new THREE.Mesh(new THREE.CapsuleGeometry(0.016, 0.035, 4, 8), oscuro);
+      ant.position.set(s * 0.035, -0.015, 0.455);
+      ant.rotation.x = 1.3;
+      this.group.add(ant);
+    }
 
-    // ── Alas. Baten a ~200 Hz en el animal; aquí se ven como un borrón.
-    const wingGeo = new THREE.CircleGeometry(0.32, 24);
-    wingGeo.rotateX(-Math.PI / 2);         // acostada sobre el cuerpo
-    wingGeo.scale(0.34, 1, 1.05);          // angosta y larga
-    wingGeo.translate(0, 0, -0.33);        // nace en el pivote y va hacia atrás
+    // ── Cerdas. Son el detalle que más dice "mosca": el bicho está erizado.
+    const pts = [];
+    const erizar = (cx, cy, cz, rx, ry, rz, n, largo) => {
+      for (let i = 0; i < n; i++) {
+        const u = Math.acos(1 - 2 * (i + 0.5) / n);
+        const v = i * 2.399963;
+        const nx = Math.sin(u) * Math.cos(v), ny = Math.cos(u), nz = Math.sin(u) * Math.sin(v);
+        if (ny < -0.35) continue;                       // no salen de la panza
+        pts.push(new THREE.Vector3(cx + nx * rx, cy + ny * ry, cz + nz * rz));
+        pts.push(new THREE.Vector3(
+          cx + nx * rx * (1 + largo), cy + ny * ry * (1 + largo) + largo * 0.05, cz + nz * rz * (1 + largo)));
+      }
+    };
+    erizar(0, 0, 0, 0.207, 0.19, 0.22, 46, 0.34);
+    erizar(0, 0, -0.40, 0.186, 0.156, 0.264, 40, 0.28);
+    const cerdas = new THREE.LineSegments(
+      new THREE.BufferGeometry().setFromPoints(pts),
+      new THREE.LineBasicMaterial({ color: 0x15151a, transparent: true, opacity: 0.85 }),
+    );
+    this.group.add(cerdas);
+
+    // ── Alas: largas, sobrepasan el abdomen, con nervaduras.
+    const wcv = document.createElement('canvas');
+    wcv.width = 256; wcv.height = 96;
+    const wg = wcv.getContext('2d');
+    wg.fillStyle = 'rgba(214,232,255,0.30)'; wg.fillRect(0, 0, 256, 96);
+    wg.strokeStyle = 'rgba(120,150,190,0.55)'; wg.lineWidth = 1.6;
+    for (const [y0, y1, c] of [[30, 20, 30], [44, 40, 46], [58, 62, 58], [70, 80, 74]]) {
+      wg.beginPath(); wg.moveTo(6, 48);
+      wg.bezierCurveTo(80, c, 170, y1, 250, y0); wg.stroke();
+    }
+    wg.lineWidth = 1;
+    for (let i = 0; i < 4; i++) {
+      wg.beginPath(); wg.moveTo(110 + i * 32, 26); wg.lineTo(118 + i * 32, 72); wg.stroke();
+    }
+    const wingTex = new THREE.CanvasTexture(wcv);
+
+    const wingGeo = new THREE.CircleGeometry(0.42, 26);
+    wingGeo.rotateX(-Math.PI / 2);
+    wingGeo.scale(0.30, 1, 1.0);
+    wingGeo.translate(0, 0, -0.42);
     const wingMat = new THREE.MeshStandardMaterial({
-      color: 0xbcd8ff, roughness: 0.05, metalness: 0,
-      transparent: true, opacity: 0.085, side: THREE.DoubleSide, depthWrite: false,
+      map: wingTex, roughness: 0.05, metalness: 0,
+      transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false,
     });
     this.wings = [];
     for (const s of [-1, 1]) {
       const pivot = new THREE.Group();
-      pivot.position.set(s * 0.07, 0.155, -0.04);
+      pivot.position.set(s * 0.075, 0.17, -0.06);
       pivot.add(new THREE.Mesh(wingGeo, wingMat));
       pivot.rotation.y = s * 0.30;
       this.group.add(pivot);
       this.wings.push({ pivot, s });
     }
 
-    // ── Balancines: los giroscopios de la mosca.
+    // Balancines: los giroscopios que le quedaron en lugar del segundo par de alas.
     for (const s of [-1, 1]) {
-      const h = new THREE.Mesh(new THREE.SphereGeometry(0.028, 8, 6), body);
-      h.position.set(s * 0.1, 0.03, -0.2);
+      const h = new THREE.Mesh(new THREE.SphereGeometry(0.026, 8, 6), oscuro);
+      h.position.set(s * 0.105, 0.02, -0.19);
       this.group.add(h);
     }
 
-    // ── Patas.
-    this.legs = [];
-    const legMat = new THREE.MeshStandardMaterial({ color: 0x17171c, roughness: 0.7 });
+    // ── Patas: cortas, gruesas y en tres tramos.
+    const legMat = new THREE.MeshStandardMaterial({ color: 0x191920, roughness: 0.75 });
     for (const s of [-1, 1]) {
       for (let i = 0; i < 3; i++) {
         const leg = new THREE.Group();
-        const z = 0.14 - i * 0.17;
-        const upper = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.008, 0.17, 6), legMat);
-        upper.position.set(s * 0.125, -0.075, z);
-        upper.rotation.z = s * 1.05;
-        upper.rotation.x = (i - 1) * 0.34;
-        leg.add(upper);
-        const lower = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.005, 0.20, 6), legMat);
-        lower.position.set(s * 0.195, -0.165, z + (i - 1) * 0.05);
-        lower.rotation.z = s * 0.18;
-        leg.add(lower);
+        const z = 0.13 - i * 0.16;
+        const fem = new THREE.Mesh(new THREE.CylinderGeometry(0.021, 0.015, 0.16, 7), legMat);
+        fem.position.set(s * 0.135, -0.055, z);
+        fem.rotation.z = s * 1.1;
+        fem.rotation.x = (i - 1) * 0.38;
+        leg.add(fem);
+        const tib = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.009, 0.17, 7), legMat);
+        tib.position.set(s * 0.205, -0.135, z + (i - 1) * 0.055);
+        tib.rotation.z = s * 0.3;
+        tib.rotation.x = (i - 1) * 0.22;
+        leg.add(tib);
+        const tar = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.005, 0.10, 6), legMat);
+        tar.position.set(s * 0.232, -0.208, z + (i - 1) * 0.085);
+        tar.rotation.z = s * 0.9;
+        leg.add(tar);
         this.group.add(leg);
-        this.legs.push(leg);
       }
     }
 
@@ -248,8 +363,8 @@ export class Fly3D {
   finishBrain(geo, col) {
     this.brainColors = col;
     this.brain = new THREE.Points(geo, new THREE.PointsMaterial({
-      size: 0.028, vertexColors: true, transparent: true, opacity: 0.92,
-      blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false,
+      size: 0.022, vertexColors: true, transparent: true, opacity: 0.9,
+      blending: THREE.AdditiveBlending, depthWrite: false,
       sizeAttenuation: true,
     }));
     this.brain.renderOrder = 20;
@@ -263,7 +378,7 @@ export class Fly3D {
       new THREE.Vector3(0, -0.01, 0.05),
       new THREE.Vector3(0, -0.02, 0.0),
     ]);
-    this.axonMat = new THREE.LineBasicMaterial({ color: 0xff2d55, transparent: true, opacity: 0.2, depthTest: false });
+    this.axonMat = new THREE.LineBasicMaterial({ color: 0xff2d55, transparent: true, opacity: 0.2 });
     this.axonLine = new THREE.Line(axon, this.axonMat);
     this.axonLine.renderOrder = 21;
     this.group.add(this.axonLine);
@@ -284,7 +399,7 @@ export class Fly3D {
       const v = trace[i];
       // El acento manda: con mezcla aditiva, sumarle blanco a la actividad
       // convierte cualquier zona densa en una mancha blanca sin color.
-      const k = v < 0.02 ? 0.10 : 0.16 + v * 0.62;
+      const k = v < 0.02 ? 0.08 : 0.13 + v * 0.55;
       c[i * 3] = a.r * k + 0.02;
       c[i * 3 + 1] = a.g * k + 0.03;
       c[i * 3 + 2] = a.b * k + 0.05;
@@ -294,7 +409,7 @@ export class Fly3D {
     if (!gf) { this.brain.geometry.attributes.color.needsUpdate = true; return; }
     for (let i = gf.start; i < gf.end; i++) {
       const v = trace[i];
-      c[i * 3] = 0.55 + v * 1.6; c[i * 3 + 1] = 0.04 + v * 0.25; c[i * 3 + 2] = 0.14 + v * 0.4;
+      c[i * 3] = 0.40 + v * 1.1; c[i * 3 + 1] = 0.03 + v * 0.18; c[i * 3 + 2] = 0.10 + v * 0.3;
     }
     this.brain.geometry.attributes.color.needsUpdate = true;
   }

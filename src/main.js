@@ -147,6 +147,7 @@ function resolve() {
 
   arena.impact(s.x, s.z);
   Aprende.apuntar(mem, s.x - s.flyAt.x, s.z - s.flyAt.z);
+  Aprende.aprender(mem, { reacciono: s.reaction !== null, cerca: cerca || escapo, muere });
   mem.swats += 1;
 
   if (muere) {
