@@ -10,7 +10,7 @@
  * (Este repositorio tuvo antes circuitos olfativo y de cuerpo fungiforme, con
  * sus mediciones. Siguen en el historial de git, en el commit 0ef5781.)
  */
-import { buildCSR, LIFNet } from './lif.js?v=5';
+import { buildCSR, LIFNet } from './lif.js?v=6';
 
 /** Ayuda para ir apilando poblaciones y quedarnos con sus rangos de índices. */
 class Layout {

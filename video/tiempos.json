@@ -1,0 +1,110 @@
+{
+  "total": 102.752,
+  "lineas": [
+    {
+      "id": "01",
+      "escena": "apertura",
+      "texto": "Google y el instituto Janelia mapearon el cerebro completo de una mosca. En internet lo pusieron a jugar DOOM.",
+      "inicio": 0.0,
+      "dur": 7.314
+    },
+    {
+      "id": "02",
+      "escena": "apertura",
+      "texto": "Nosotros hicimos otra cosa: un juego donde tú intentas aplastarla.",
+      "inicio": 7.654,
+      "dur": 5.039
+    },
+    {
+      "id": "03",
+      "escena": "escala",
+      "texto": "Su cerebro no es un video. Son mil cuatrocientas ocho neuronas y casi cinco mil sinapsis corriendo en tu navegador, a dos mil pasos por segundo.",
+      "inicio": 13.033,
+      "dur": 9.021
+    },
+    {
+      "id": "04",
+      "escena": "circuito",
+      "texto": "El cableado es real. Es la vía de escape de la mosca: cinco sinapsis entre el fotón y el músculo del salto.",
+      "inicio": 22.394,
+      "dur": 7.279
+    },
+    {
+      "id": "05",
+      "escena": "circuito",
+      "texto": "La última se llama DNp cero uno, la neurona gigante. Cuando se enciende, salta.",
+      "inicio": 30.013,
+      "dur": 6.304
+    },
+    {
+      "id": "06",
+      "escena": "retina",
+      "texto": "Y lo que ves caer es exactamente lo que ella ve: el matamoscas se proyecta sobre su retina simulada.",
+      "inicio": 36.658,
+      "dur": 7.001
+    },
+    {
+      "id": "07",
+      "escena": "aprende",
+      "texto": "Lo interesante es que aprende de cada intento tuyo.",
+      "inicio": 43.998,
+      "dur": 3.379
+    },
+    {
+      "id": "08",
+      "escena": "aprende",
+      "texto": "Se sensibiliza, así que reacciona antes. Y cambia a un despegue explosivo: de ciento cinco milisegundos, a treinta.",
+      "inicio": 47.717,
+      "dur": 8.382
+    },
+    {
+      "id": "09",
+      "escena": "generaciones",
+      "texto": "Generación uno: muere siempre. Generación seis: se salva tres de cada diez. Generación nueve: ya no la tocas.",
+      "inicio": 56.439,
+      "dur": 8.382
+    },
+    {
+      "id": "10",
+      "escena": "generaciones",
+      "texto": "Estás entrenando a tu propia enemiga.",
+      "inicio": 65.162,
+      "dur": 2.659
+    },
+    {
+      "id": "11",
+      "escena": "contragolpe",
+      "texto": "Tu única salida sale de la misma biología: agotarla. Golpes seguidos habitúan esas mismas sinapsis y la obligan a volver al despegue lento.",
+      "inicio": 68.16,
+      "dur": 9.265
+    },
+    {
+      "id": "12",
+      "escena": "contragolpe",
+      "texto": "Pero se recupera en menos de dos segundos, así que hay que comprometerse.",
+      "inicio": 77.765,
+      "dur": 4.551
+    },
+    {
+      "id": "13",
+      "escena": "honestidad",
+      "texto": "Nada de esto es entrenamiento con datos. No hay backpropagation: hay plasticidad en unas sinapsis concretas.",
+      "inicio": 82.656,
+      "dur": 7.012
+    },
+    {
+      "id": "14",
+      "escena": "honestidad",
+      "texto": "Y lo que no funcionó también quedó documentado: hubo una ronda de rastreo de olor, la medimos, salió igual que no hacer nada, y la quitamos.",
+      "inicio": 90.009,
+      "dur": 9.091
+    },
+    {
+      "id": "15",
+      "escena": "cierre",
+      "texto": "Está en línea, y es código abierto.",
+      "inicio": 99.439,
+      "dur": 2.972
+    }
+  ]
+}

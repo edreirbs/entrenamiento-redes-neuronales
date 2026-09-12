@@ -42,7 +42,10 @@ body {
   position: fixed; left: 18px; bottom: 18px; z-index: 6; width: 296px;
   background: rgba(13,14,19,.82); border: 1px solid #232733; border-radius: 12px;
   padding: 12px 13px 11px; backdrop-filter: blur(7px);
+  /* Deja pasar el clic al canvas: el panel no debe robarse golpes. */
+  pointer-events: none;
 }
+.stats button { pointer-events: auto; }
 .sthead { display: flex; justify-content: space-between; align-items: center; margin-bottom: 9px; }
 .sthead span { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--dim); }
 .sthead button {
@@ -57,7 +60,6 @@ body {
 .legend span { display: flex; align-items: center; gap: 5px; font-size: 9.5px; color: #666d80; }
 .legend i { width: 8px; height: 8px; border-radius: 2px; display: block; }
 .legend .lr { background: #2fe0c0; }
-.legend .ld { background: #d9a441; }
 .legend .lx { background: #ff5a4d; }
 .strow { display: flex; align-items: baseline; gap: 8px; font-size: 11px; color: var(--dim); padding: 2.5px 0; }
 .strow span { min-width: 62px; }

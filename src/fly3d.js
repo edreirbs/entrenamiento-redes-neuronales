@@ -38,6 +38,7 @@ export class Fly3D {
     this.alive = true;
     this.wingSpeed = 34;
     this.bounds = { x: 1.9, z: 1.2 };
+    this.veto = null;              // huella del panel: zona de mesa donde no entra
 
     this.build();
     // Sólo la mosca simulada lleva cerebro visible. La del jugador es una
@@ -431,6 +432,27 @@ export class Fly3D {
     this.alive = true;
   }
 
+  /**
+   * ¿Está ese punto bajo el panel de la interfaz? Ahí no se le ve ni se le puede
+   * pegar, así que para el juego es como si no existiera la mesa.
+   */
+  vetado(x, z) {
+    const v = this.veto;
+    return !!v && x > v.x0 && x < v.x1 && z > v.z0 && z < v.z1;
+  }
+
+  /** Saca un punto de la zona vetada por el lado más cercano. */
+  sacaDelVeto(p) {
+    const v = this.veto;
+    if (!v || !this.vetado(p.x, p.z)) return p;
+    const salidas = [
+      { x: v.x0, z: p.z, d: p.x - v.x0 }, { x: v.x1, z: p.z, d: v.x1 - p.x },
+      { x: p.x, z: v.z0, d: p.z - v.z0 }, { x: p.x, z: v.z1, d: v.z1 - p.z },
+    ];
+    const mejor = salidas.reduce((a, b) => (b.d < a.d ? b : a));
+    return { x: mejor.x, z: mejor.z };
+  }
+
   /** Escapa en la dirección dada, que le llega del propio circuito. */
   escape(dx, dz, bounds) {
     if (!this.alive || this.state === 'escape') return;
@@ -440,10 +462,10 @@ export class Fly3D {
     this.escDur = 0.62;
     this.from = this.group.position.clone();
     const dist = 0.85 + Math.random() * 0.55;
-    this.to = {
+    this.to = this.sacaDelVeto({
       x: Math.max(-bounds.x, Math.min(bounds.x, this.from.x + (dx / m) * dist)),
       z: Math.max(-bounds.z, Math.min(bounds.z, this.from.z + (dz / m) * dist)),
-    };
+    });
     this.yaw = Math.atan2(this.to.x - this.from.x, this.to.z - this.from.z);
   }
 
@@ -478,7 +500,8 @@ export class Fly3D {
       const b = this.bounds ?? { x: 1.9, z: 1.2 };
       const nx = this.group.position.x + Math.sin(this.yaw) * this.speed * dt;
       const nz = this.group.position.z + Math.cos(this.yaw) * this.speed * dt;
-      if (Math.abs(nx) > b.x || Math.abs(nz) > b.z) this.yaw += 2.2 + Math.random();
+      const fuera = Math.abs(nx) > b.x || Math.abs(nz) > b.z;
+      if (fuera || this.vetado(nx, nz)) this.yaw += 2.2 + Math.random();
       else { this.group.position.x = nx; this.group.position.z = nz; }
       this.group.position.y = BASE_Y + Math.sin(this.t * 13) * 0.003;
       this.group.rotation.y += (this.yaw - this.group.rotation.y) * Math.min(1, dt * 7);

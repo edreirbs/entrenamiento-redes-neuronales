@@ -16,10 +16,22 @@ y **DNp01**, la neurona gigante— conectadas como en el animal y colocadas más
 menos donde van. Cada punto es una neurona y su brillo es su disparo real. Son
 1,408 neuronas y 4,972 sinapsis corriendo a 2,000 pasos por segundo.
 
-**Lo que ves es lo que ella ve.** El matamoscas baja a velocidad constante y se
-proyecta sobre su campo visual como una cámara estenopeica: el radio depende de
-la altura y el centro se desplaza si el golpe no viene justo de arriba. Por eso
-apuntarle de lado no lo percibe igual.
+**Lo que ves es lo que ella ve.** El matamoscas se proyecta sobre su campo
+visual como una cámara estenopeica: el radio depende de la altura y el centro se
+desplaza si el golpe no viene justo de arriba. Por eso apuntarle de lado no lo
+percibe igual.
+
+**Y baja a la velocidad de tu mano.** Se mide cuánto recorrió el punto de mira
+en los 200 ms previos al golpe, tomando la velocidad máxima de esa ventana —
+quien da un manotazo frena justo antes de soltar el clic, y medir sólo la cola
+daría "lento" siempre. Un manotazo llega en 190 ms y un golpe apuntado con calma
+en 330, que es la diferencia entre alcanzarla y no. A cambio, mientras más
+rápido, peor la puntería.
+
+Se mide **distancia recorrida**, no ritmo de clics, y eso es deliberado:
+martillear en el mismo sitio da distancia cero, o sea golpe lento. Si se premiara
+el ritmo, machacar subiría la fatiga *y* aceleraría el golpe — doble recompensa
+por el mismo acto, y el juego se volvería un botón de matar garantizado.
 
 **Nuestro: la dinámica.** Un conectoma es anatomía estática y no dice la fuerza de
 cada sinapsis ni las constantes de tiempo. Esos parámetros se ajustaron midiendo
@@ -97,6 +109,13 @@ los dos números con su mejora desde el primer intento, y el margen actual.
 El botón **reiniciar** del panel borra todo lo aprendido en dos toques, y
 devuelve una mosca de generación 1 sin experiencia.
 
+## El video
+
+En `video/` hay un proyecto de [Remotion](https://remotion.dev) que produce un
+video cuadrado de 104 segundos contando todo esto, con voz sintética en español
+y subtítulos. El guion vive en `video/guion.json` y los tiempos se derivan de
+medir los audios, no de cronometrar a mano.
+
 ## Estructura
 
 ```
@@ -109,6 +128,7 @@ src/fly3d.js            la mosca por geometría, con el circuito dentro de la ca
 src/scene3d.js          mesa, luces, matamoscas y mira
 src/learning.js         lo que se lleva de un intento al siguiente
 src/main.js             el juego
+video/                  el proyecto de Remotion que produce el video
 ```
 
 El circuito corre fuera del navegador, que es como se calibró:

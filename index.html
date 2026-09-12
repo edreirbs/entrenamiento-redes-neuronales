@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Mátala si puedes</title>
 <meta name="description" content="Intenta aplastar una mosca cuyo cerebro está simulado neurona por neurona. Aprende de cada intento tuyo.">
-<link rel="stylesheet" href="assets/style.css?v=5">
+<link rel="stylesheet" href="assets/style.css?v=6">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪰</text></svg>">
 </head>
 <body>
@@ -35,9 +35,8 @@
   </div>
   <canvas id="chart"></canvas>
   <div class="legend">
-    <span><i class="lr"></i>reacción</span>
-    <span><i class="ld"></i>despegue</span>
-    <span><i class="lx"></i>no llegó</span>
+    <span><i class="lr"></i>escapó por poco</span>
+    <span><i class="lx"></i>no le alcanzó</span>
   </div>
   <div class="strow"><span>reacción</span><b id="sReact">—</b><em id="dReact"></em></div>
   <div class="strow"><span>despegue</span><b id="sTake">—</b><em id="dTake"></em></div>
@@ -65,8 +64,14 @@
   son las neuronas del circuito de escape de <i>Drosophila</i> — fotorreceptores,
   lámina, T5, LPLC2, LC4 y <b>DNp01</b>, la neurona gigante — conectadas como en
   el animal. Cada punto es una neurona y su brillo es su disparo real. El
-  matamoscas baja a velocidad constante, así que lo que ves caer y lo que ella
-  ve son la misma cosa: si le apuntas de lado, lo percibe distinto.</p>
+  matamoscas se proyecta sobre su retina mientras baja, así que lo que ves caer
+  y lo que ella ve son la misma cosa: si le apuntas de lado, lo percibe
+  distinto.</p>
+  <p><b>Y baja a la velocidad de tu mano.</b> Se mide cuánto recorriste el punto
+  de mira justo antes de golpear: un manotazo rápido llega en 190 ms y uno lento
+  en 330, que es la diferencia entre alcanzarla y no. A cambio, mientras más
+  rápido el golpe, peor la puntería. Se mide la <i>distancia</i> recorrida, no el
+  ritmo de clics: martillear en el mismo sitio no acelera nada.</p>
   <p><b>Y aprende de ti, de tres maneras.</b> Se <i>sensibiliza</i>: el susto sube
   la respuesta de las sinapsis que llegan a la neurona gigante, y reacciona antes.
   Cambia a <i>despegue corto</i>: con la neurona gigante metida, el salto es
@@ -89,6 +94,6 @@
   </div>
 </dialog>
 
-<script type="module" src="src/main.js?v=5"></script>
+<script type="module" src="src/main.js?v=6"></script>
 </body>
 </html>

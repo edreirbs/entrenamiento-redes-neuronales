@@ -1,0 +1,81 @@
+{
+  "voz": "es_MX-ald-medium",
+  "pausaEntreLineas": 0.34,
+  "lineas": [
+    {
+      "id": "01",
+      "escena": "apertura",
+      "texto": "Google y el instituto Janelia mapearon el cerebro completo de una mosca. En internet lo pusieron a jugar DOOM."
+    },
+    {
+      "id": "02",
+      "escena": "apertura",
+      "texto": "Nosotros hicimos otra cosa: un juego donde tú intentas aplastarla."
+    },
+    {
+      "id": "03",
+      "escena": "escala",
+      "texto": "Su cerebro no es un video. Son mil cuatrocientas ocho neuronas y casi cinco mil sinapsis corriendo en tu navegador, a dos mil pasos por segundo."
+    },
+    {
+      "id": "04",
+      "escena": "circuito",
+      "texto": "El cableado es real. Es la vía de escape de la mosca: cinco sinapsis entre el fotón y el músculo del salto."
+    },
+    {
+      "id": "05",
+      "escena": "circuito",
+      "texto": "La última se llama DNp cero uno, la neurona gigante. Cuando se enciende, salta."
+    },
+    {
+      "id": "06",
+      "escena": "retina",
+      "texto": "Y lo que ves caer es exactamente lo que ella ve: el matamoscas se proyecta sobre su retina simulada."
+    },
+    {
+      "id": "07",
+      "escena": "aprende",
+      "texto": "Lo interesante es que aprende de cada intento tuyo."
+    },
+    {
+      "id": "08",
+      "escena": "aprende",
+      "texto": "Se sensibiliza, así que reacciona antes. Y cambia a un despegue explosivo: de ciento cinco milisegundos, a treinta."
+    },
+    {
+      "id": "09",
+      "escena": "generaciones",
+      "texto": "Generación uno: muere siempre. Generación seis: se salva tres de cada diez. Generación nueve: ya no la tocas."
+    },
+    {
+      "id": "10",
+      "escena": "generaciones",
+      "texto": "Estás entrenando a tu propia enemiga."
+    },
+    {
+      "id": "11",
+      "escena": "contragolpe",
+      "texto": "Tu única salida sale de la misma biología: agotarla. Golpes seguidos habitúan esas mismas sinapsis y la obligan a volver al despegue lento."
+    },
+    {
+      "id": "12",
+      "escena": "contragolpe",
+      "texto": "Pero se recupera en menos de dos segundos, así que hay que comprometerse."
+    },
+    {
+      "id": "13",
+      "escena": "honestidad",
+      "texto": "Nada de esto es entrenamiento con datos. No hay backpropagation: hay plasticidad en unas sinapsis concretas."
+    },
+    {
+      "id": "14",
+      "escena": "honestidad",
+      "texto": "Y lo que no funcionó también quedó documentado: hubo una ronda de rastreo de olor, la medimos, salió igual que no hacer nada, y la quitamos."
+    },
+    {
+      "id": "15",
+      "escena": "cierre",
+      "texto": "Está en línea, y es código abierto."
+    }
+  ]
+}

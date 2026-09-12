@@ -1,13 +1,15 @@
 /**
  * La mesa: una mosca, un matamoscas y nada más.
  *
- * El matamoscas sigue al cursor y baja a velocidad constante, así que su
- * tamaño angular crece exactamente como el estímulo que se le inyecta al
- * circuito. Lo que ves caer y lo que la mosca "ve" son la misma cosa, y por
- * eso apuntar de lado también cambia lo que ella percibe.
+ * El matamoscas sigue al cursor y baja a velocidad constante DENTRO de cada
+ * golpe, así que su tamaño angular crece exactamente como el estímulo que se
+ * le inyecta al circuito. Lo que ves caer y lo que la mosca "ve" son la misma
+ * cosa, y por eso apuntar de lado también cambia lo que ella percibe. Lo que
+ * cambia de un golpe a otro es cuánto tarda en bajar: eso lo decide la
+ * velocidad de la mano del jugador (ver `calculaSwat` en main.js).
  */
 import * as THREE from '../vendor/three.module.js';
-import { Fly3D } from './fly3d.js?v=5';
+import { Fly3D } from './fly3d.js?v=6';
 
 export const ACCENT = 0x2fe0c0;
 export const HOVER_Y = 1.55;
@@ -181,16 +183,47 @@ export class Arena {
     return m;
   }
 
-  /** Convierte la posición del puntero en un punto de la mesa. */
-  pointTo(clientX, clientY) {
+  /** Punto de la mesa bajo unas coordenadas de pantalla, sin recortar. */
+  pointToRaw(clientX, clientY) {
     const r = this.canvas.getBoundingClientRect();
     const nx = ((clientX - r.left) / r.width) * 2 - 1;
     const ny = -((clientY - r.top) / r.height) * 2 + 1;
     this.ray.setFromCamera({ x: nx, y: ny }, this.camera);
     if (!this.ray.ray.intersectPlane(this.plane, this.hit)) return null;
+    return { x: this.hit.x, z: this.hit.z };
+  }
+
+  /** Convierte la posición del puntero en un punto de la mesa, dentro de los límites. */
+  pointTo(clientX, clientY) {
+    const p = this.pointToRaw(clientX, clientY);
+    if (!p) return null;
     return {
-      x: Math.max(-BOUNDS.x, Math.min(BOUNDS.x, this.hit.x)),
-      z: Math.max(-BOUNDS.z, Math.min(BOUNDS.z, this.hit.z)),
+      x: Math.max(-BOUNDS.x, Math.min(BOUNDS.x, p.x)),
+      z: Math.max(-BOUNDS.z, Math.min(BOUNDS.z, p.z)),
+    };
+  }
+
+  /**
+   * Huella sobre la mesa de un elemento de la interfaz.
+   *
+   * Sirve para que la mosca no se meta debajo del panel de la gráfica, donde no
+   * se ve y no se le puede pegar. Se proyectan las cuatro esquinas al plano de
+   * puntería y se toma su caja envolvente; hay que usar la versión SIN recorte,
+   * porque recortar a los límites del juego deformaría la huella.
+   */
+  huellaDe(el, margen = 0.12) {
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    if (!r.width || !r.height) return null;
+    const esquinas = [
+      this.pointToRaw(r.left, r.top), this.pointToRaw(r.right, r.top),
+      this.pointToRaw(r.left, r.bottom), this.pointToRaw(r.right, r.bottom),
+    ].filter(Boolean);
+    if (esquinas.length < 4) return null;
+    const xs = esquinas.map((p) => p.x), zs = esquinas.map((p) => p.z);
+    return {
+      x0: Math.min(...xs) - margen, x1: Math.max(...xs) + margen,
+      z0: Math.min(...zs) - margen, z1: Math.max(...zs) + margen,
     };
   }
 

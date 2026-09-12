@@ -59,7 +59,11 @@ export const HIST_MAX = 60;
 /** Registra un encuentro. Todo golpe enseña algo; unos mucho más que otros. */
 export function aprender(s, ev) {
   if (!s.hist) s.hist = [];
-  s.hist.push({ r: ev.reaccion ?? null, d: Math.round(ev.despegue), o: ev.muere ? 'k' : ev.cerca ? 'e' : 'f' });
+  s.hist.push({
+    r: ev.reaccion ?? null, d: Math.round(ev.despegue),
+    s: Math.round(ev.swat ?? 270),          // sin esto el margen es irreconstruible
+    o: ev.muere ? 'k' : ev.cerca ? 'e' : 'f',
+  });
   if (s.hist.length > HIST_MAX) s.hist.shift();
   let d = PESO.intento;
   if (ev.reacciono) d += PESO.reaccion;

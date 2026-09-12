@@ -1,0 +1,16 @@
+{
+  "name": "video-matala-si-puedes",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Video de dos minutos sobre el juego, hecho con Remotion",
+  "scripts": {
+    "studio": "remotion studio",
+    "render": "remotion render Matala out/matala.mp4"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.523",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "remotion": "4.0.523"
+  }
+}
