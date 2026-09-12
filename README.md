@@ -1,8 +1,11 @@
 # Tú contra la mosca
 
-Dos duelos contra el cerebro de una mosca de la fruta, simulado neurona por
-neurona en el navegador. No hay video ni grabación: cada ronda construye su
-circuito, lo corre paso a paso en tiempo real contra tus reflejos, y lo dibuja.
+Dos duelos en 3D contra el cerebro de una mosca de la fruta, simulado neurona
+por neurona en el navegador. No hay video ni grabación: cada ronda construye su
+circuito, lo corre paso a paso en tiempo real contra tus reflejos, y lo dibuja
+**dentro de la cabeza de la mosca**. Cada punto que se enciende ahí es una
+neurona del circuito disparando de verdad, colocada más o menos donde va en el
+animal.
 
 **Ronda 1 — el matamoscas.** Una sombra se expande sobre los dos y gana el
 primero en saltar. Tú reaccionas en unos 250 ms. La vía de escape de la mosca
@@ -10,8 +13,8 @@ primero en saltar. Tú reaccionas en unos 250 ms. La vía de escape de la mosca
 gigante DNp01— dispara a los ~220 ms desde que la sombra aparece. El duelo está
 calibrado para que sea apretado y se pueda ganar, aunque casi siempre se pierde.
 
-**Ronda 2 — la memoria.** Se enciende una de cuatro puertas, se apaga la luz tres
-segundos y hay que recordar cuál era. Su cuerpo fungiforme sí aprende, pero la
+**Ronda 2 — la memoria.** Se enciende uno de cuatro terrones de azúcar, se apaga
+la luz tres segundos y hay que recordar cuál era. Su cuerpo fungiforme sí aprende, pero la
 huella decae con τ ≈ 1.1 s y a los tres segundos ya está en el azar. Esta la
 ganas tú.
 
@@ -64,16 +67,20 @@ exactamente lo que esta página le critica a las demos virales.
 ## Estructura
 
 ```
-index.html            portada, arena y textos
+index.html            una pantalla, casi sin texto
 assets/style.css
+vendor/three.module.js  Three.js r160, incluido para no depender de un CDN
 src/lif.js            motor de integración y disparo con fuga, sinapsis dispersas en CSR
 src/circuits.js       los tres circuitos: escape, olfativo, cuerpo fungiforme
-src/brainview.js      dibujo de la actividad, neurona por neurona
-src/rounds/looming.js ronda 1
-src/rounds/memory.js  ronda 2
-src/rounds/plume.js   ronda descartada (ver arriba)
-src/ui.js             utilidades de entrada
+src/fly3d.js          la mosca por geometría, con el circuito dentro de la cabeza
+src/scene3d.js        mesa, luces, matamoscas y terrones
+src/main.js           las dos rondas
+src/rounds/plume.js   ronda descartada, sin conectar (ver arriba)
 ```
+
+El matamoscas baja a velocidad constante, así que su tamaño angular crece
+exactamente como el estímulo que se le inyecta al circuito: lo que ves caer y lo
+que la mosca simulada "ve" son la misma cosa.
 
 Los circuitos son ejecutables fuera del navegador, que es como se calibraron:
 

@@ -4,157 +4,48 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Tú contra la mosca</title>
-<meta name="description" content="Dos duelos contra el cerebro de una mosca simulado neurona por neurona. Te gana en reflejos; le ganas en memoria.">
+<meta name="description" content="Dos duelos contra el cerebro de una mosca, simulado neurona por neurona en 3D.">
 <link rel="stylesheet" href="assets/style.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪰</text></svg>">
 </head>
 <body>
 
-<header class="top">
-  <div class="brand">
-    <span class="bug">🪰</span>
-    <div>
-      <h1>Tú contra la mosca</h1>
-      <p class="sub">Dos duelos contra un cerebro simulado neurona por neurona</p>
-    </div>
-  </div>
-  <ol class="rounds" id="roundnav">
-    <li data-round="0"><span>1</span> Matamoscas</li>
-    <li data-round="1"><span>2</span> Memoria</li>
-  </ol>
-</header>
+<canvas id="stage"></canvas>
 
-<main>
-  <!-- ─── Portada ─── -->
-  <section class="screen active" id="screen-intro">
-    <div class="intro">
-      <p class="kicker">Arena de conectomas</p>
-      <h2>Tienes 86 mil millones de neuronas.<br>Ella tiene 166 mil.</h2>
-      <p class="lead">
-        Vas a competir dos veces contra el cerebro de una mosca de la fruta. No contra
-        un video ni contra una grabación: contra neuronas simuladas una por una en tu
-        navegador, cableadas como están cableadas en el animal.
-      </p>
-      <p class="lead dim">
-        Spoiler: la primera la pierdes. La parte interesante es <em>por qué</em>, y por
-        qué la segunda la ganas sin despeinarte.
-      </p>
-      <button class="btn big" id="btn-start">Empezar</button>
-      <p class="fineprint">Se juega con la barra espaciadora y las teclas 1 a 4. En celular, tocando la pantalla.</p>
-    </div>
-  </section>
+<div class="brandmini">🪰 <span>Tú contra la mosca</span></div>
+<div class="rounddots" id="dots"></div>
 
-  <!-- ─── Presentación de ronda ─── -->
-  <section class="screen" id="screen-card">
-    <div class="card">
-      <p class="kicker" id="card-kicker">Ronda 1</p>
-      <h2 id="card-title"></h2>
-      <p class="lead" id="card-text"></p>
-      <div class="circuitline" id="card-circuit"></div>
-      <button class="btn big" id="btn-go">Vamos</button>
-    </div>
-  </section>
+<div class="tag tag-h" id="tagH">TÚ</div>
+<div class="tag tag-f" id="tagF">SIMULADA</div>
+<div class="num num-h" id="numH"></div>
+<div class="num num-f" id="numF"></div>
 
-  <!-- ─── Arena ─── -->
-  <section class="screen" id="screen-play">
-    <div class="arena">
-      <div class="side human">
-        <div class="side-head"><h3>Tú</h3><span class="tag" id="tag-human"></span></div>
-        <canvas id="cv-human" width="520" height="380"></canvas>
-        <div class="hud" id="hud-human">—</div>
-      </div>
-      <div class="side fly">
-        <div class="side-head"><h3>La mosca</h3><span class="tag" id="tag-fly"></span></div>
-        <canvas id="cv-fly" width="520" height="380"></canvas>
-        <div class="hud" id="hud-fly">—</div>
-      </div>
-    </div>
-    <div class="trials" id="trials"></div>
-    <p class="prompt" id="prompt"></p>
-    <div class="brainwrap">
-      <div class="brainlabel">
-        <span>Actividad del circuito, en vivo</span>
-        <span class="mono" id="brainstats"></span>
-      </div>
-      <canvas id="cv-brain" width="1100" height="150"></canvas>
-    </div>
-  </section>
+<div class="cue" id="cue"></div>
 
-  <!-- ─── Resultado de ronda ─── -->
-  <section class="screen" id="screen-result">
-    <div class="card">
-      <p class="kicker" id="res-kicker"></p>
-      <h2 id="res-title"></h2>
-      <div class="score" id="res-score"></div>
-      <p class="lead" id="res-text"></p>
-      <button class="btn big" id="btn-next">Siguiente</button>
-    </div>
-  </section>
+<div class="veil" id="veil">
+  <div class="panel" id="panel"></div>
+</div>
 
-  <!-- ─── Final ─── -->
-  <section class="screen" id="screen-final">
-    <div class="card wide">
-      <p class="kicker">Marcador final</p>
-      <h2 id="fin-title"></h2>
-      <div class="finalscore" id="fin-score"></div>
-      <p class="lead" id="fin-text"></p>
-      <div class="takeaway">
-        <h4>Lo que acabas de ver</h4>
-        <p>
-          Ninguno de los tres cerebros de esta página fue entrenado. No hay backpropagation,
-          no hay pesos aprendidos, no hay datos de entrenamiento. El comportamiento sale
-          <strong>del cableado</strong>: de qué está conectado con qué, y con qué signo.
-        </p>
-        <p>
-          Esa es la diferencia con una red neuronal artificial, que empieza cableada al azar
-          y necesita millones de ejemplos para llegar a algo. La mosca nace sabiendo esquivar
-          y rastrear, y le cuesta cinco sinapsis y unos microvatios.
-        </p>
-        <p>
-          Y por eso la ronda 2 la ganas tú: la memoria flexible, la que retiene algo arbitrario
-          y lo usa después, es justo lo que un cerebro cableado de fábrica no puede darte.
-        </p>
-      </div>
-      <button class="btn big" id="btn-again">Otra vez</button>
-    </div>
-  </section>
-</main>
+<button class="info" id="info" title="¿Qué tan real es esto?">?</button>
 
-<footer class="foot">
-  <div>
-    <h4>¿Qué tan real es esto?</h4>
-    <p>
-      <strong>Real:</strong> la arquitectura. Las poblaciones (fotorreceptores, lámina, T5,
-      LPLC2, LC4, <em>DNp01</em>, células de Kenyon, MBON) y la forma en que se conectan están
-      tomadas de la literatura del conectoma de <em>Drosophila</em>. La neurona gigante DNp01
-      existe y es la vía de escape más corta que se conoce en el animal.
-    </p>
-    <p>
-      <strong>Nuestro:</strong> la dinámica. Un conectoma es anatomía estática — un mapa de
-      carreteras, no un cerebro andando. No dice la fuerza de cada sinapsis ni las constantes
-      de tiempo, así que esos parámetros los ajustamos nosotros hasta que el circuito se
-      comportara como el animal. Cambiarlos cambia el resultado, y decirlo es parte del punto.
-    </p>
-    <p>
-      <strong>Escala:</strong> aquí corren unos pocos miles de neuronas, no las 166,700 del
-      conectoma completo. Se eligieron los circuitos específicos de cada tarea.
-    </p>
-    <p>
-      <strong>Lo que no funcionó:</strong> había una tercera ronda, de rastreo de olor. El
-      circuito olfativo funciona — avanza contra el viento al oler y barre de lado al
-      perder el rastro — pero al medirlo resultó que su tasa de éxito era idéntica a la de
-      ir en línea recta sin oler nada: el barrido nunca recupera un penacho perdido.
-      Estaba ganando por la razón equivocada, así que salió de la página. El código sigue
-      en el repositorio, con las mediciones.
-    </p>
-  </div>
-  <div class="links">
-    <a href="https://github.com/edreirbs/entrenamiento-redes-neuronales" target="_blank" rel="noopener">Código en GitHub</a>
+<dialog id="about">
+  <h3>¿Qué tan real es esto?</h3>
+  <p><b>Real:</b> el cableado. Los puntos que se encienden dentro de la cabeza son
+  las neuronas del circuito de escape de <i>Drosophila</i> — fotorreceptores,
+  lámina, T5, LPLC2, LC4 y <b>DNp01</b>, la neurona gigante — conectadas como en
+  el animal. Cada punto es una neurona y su brillo es su disparo real.</p>
+  <p><b>Nuestro:</b> la dinámica. Un conectoma es anatomía estática y no dice la
+  fuerza de cada sinapsis, así que esos parámetros los ajustamos hasta que el
+  circuito se comportara como el animal.</p>
+  <p><b>Nada está entrenado.</b> No hay backpropagation ni datos de
+  entrenamiento. La conducta sale del cableado.</p>
+  <p class="links">
+    <a href="https://github.com/edreirbs/entrenamiento-redes-neuronales" target="_blank" rel="noopener">Código</a>
     <a href="https://flywire.ai" target="_blank" rel="noopener">FlyWire</a>
-    <a href="https://neuprint.janelia.org" target="_blank" rel="noopener">neuPrint · Janelia</a>
-    <a href="https://www.nature.com/articles/s41586-024-07763-9" target="_blank" rel="noopener">Shiu et al., Nature 2024</a>
-  </div>
-</footer>
+    <a href="https://www.nature.com/articles/s41586-024-07763-9" target="_blank" rel="noopener">Nature 2024</a>
+  </p>
+  <button id="closeAbout">Cerrar</button>
+</dialog>
 
 <script type="module" src="src/main.js"></script>
 </body>
