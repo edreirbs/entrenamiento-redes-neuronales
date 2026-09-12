@@ -1,18 +1,22 @@
 # El video
 
 Dos minutos sobre el juego, hechos con [Remotion](https://remotion.dev).
-Cuadrado 1080×1080, 30 fps, 104 segundos, con voz sintética y subtítulos.
+Cuadrado 1080×1080, 30 fps, 112 segundos, con voz sintética y subtítulos.
 
 ## Cómo se arma
 
 **El guion vive en `guion.json`**, una frase por entrada. De ahí sale todo lo
 demás: no hay tiempos escritos a mano en ninguna parte.
 
-1. **Voz.** Cada frase se sintetiza por separado con [Piper](https://github.com/rhasspy/piper)
-   y la voz `es_MX-ald-medium`, y se mide la duración real del `.wav`. Esos
-   tiempos se guardan en `tiempos.json`, que es lo que la composición lee para
-   colocar escenas, audio y subtítulos. Si se reescribe una frase, el video se
+1. **Voz.** `narra.py` sintetiza cada frase por separado con
+   [Piper](https://github.com/rhasspy/piper), las nivela todas con un mismo
+   factor de ganancia y mide la duración real de cada `.wav`. Esos tiempos se
+   guardan en `tiempos.json`, que es lo que la composición lee para colocar
+   escenas, audio y subtítulos. Si se reescribe una frase, el video se
    recompone solo.
+
+   El guion elige la voz (`voz`), el ritmo (`escalaLongitud`: menos de 1 es más
+   rápido) y el aire entre frases (`pausaEntreLineas`).
 
 2. **Escenas.** `src/escenas.jsx` tiene una por bloque narrativo; se agrupan
    por el campo `escena` del guion y cada una se estira hasta que empieza la
@@ -27,12 +31,9 @@ demás: no hay tiempos escritos a mano en ninguna parte.
 La voz y la salida no se versionan (pesan y se rehacen). Para reconstruirlas:
 
 ```bash
-# 1. voz (una vez): pip install piper-tts y bajar el modelo es_MX
-#    de huggingface.co/rhasspy/piper-voices
-#    luego, por cada línea de guion.json:
-#      echo "<texto>" | python3 -m piper --model es_MX-ald-medium.onnx \
-#        --output_file public/vo/<id>.wav
-#    y recalcular tiempos.json con la duración de cada wav
+# 1. voz: pip install piper-tts y bajar el .onnx (y su .json) que nombra
+#    guion.json desde huggingface.co/rhasspy/piper-voices
+python3 narra.py /ruta/a/los/modelos
 
 # 2. render
 npm install
@@ -44,9 +45,10 @@ npx remotion render src/index.jsx Matala out/matala.mp4 \
 
 ```
 guion.json        el texto, una frase por entrada
+narra.py          sintetiza la voz y calcula la línea de tiempo
 tiempos.json      generado: inicio y duración reales de cada frase
 src/Matala.jsx    la composición: escenas, audio y subtítulos
-src/escenas.jsx   las nueve escenas
+src/escenas.jsx   las diez escenas
 src/piezas.jsx    primitivas compartidas (fundidos, contadores, subtítulo)
 public/img/       capturas del juego usadas en el video
 ```

@@ -3,18 +3,19 @@ import { AbsoluteFill, Audio, Sequence, staticFile, useCurrentFrame, useVideoCon
 import tiempos from '../tiempos.json';
 import { Fondo, Subtitulo } from './piezas.jsx';
 import {
-  Apertura, Aprende, Cierre, Circuito, Contragolpe, Escala, Generaciones, Honestidad, Retina,
+  Aprende, Cansarla, Cierre, Gancho, Generaciones, Gigante, Honesto, Juego, Ve, Vivo,
 } from './escenas.jsx';
 
 const ESCENAS = {
-  apertura: Apertura,
-  escala: Escala,
-  circuito: Circuito,
-  retina: Retina,
+  gancho: Gancho,
+  juego: Juego,
+  vivo: Vivo,
+  ve: Ve,
+  gigante: Gigante,
   aprende: Aprende,
   generaciones: Generaciones,
-  contragolpe: Contragolpe,
-  honestidad: Honestidad,
+  cansarla: Cansarla,
+  honesto: Honesto,
   cierre: Cierre,
 };
 
