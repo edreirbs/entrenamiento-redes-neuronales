@@ -54,6 +54,26 @@ golpes de cada tipo hacen falta para volverla intocable:
 | lejano, pero llegó a reaccionar | 24 |
 | lejano, ni lo vio | 84 |
 
+### Tu contragolpe: agotarla
+
+Golpes repetidos y seguidos deprimen esas mismas sinapsis y la obligan a volver
+al despegue largo. Es **habituación**, el otro aprendizaje no asociativo clásico,
+y en el animal convive con la sensibilización: una sube la respuesta a la larga,
+la otra la agota en segundos. Por más entrenada que esté, si la cansas lo
+suficiente vuelve a ser matable — pero se recupera sola con τ = 1.8 s, así que
+hay que comprometerse a machacar.
+
+Medido con una mosca totalmente entrenada:
+
+| fatiga | tiempo total | la matas |
+|---|---|---|
+| 0.5 | 213 ms | nunca |
+| 0.75 | 238 ms | nunca |
+| 0.9 | 252 ms | 1 de 3 |
+
+Golpear cada 0.65 s lleva la fatiga a ~0.99; a ritmo normal (1.8 s) se queda en
+0.47, y con calma apenas en 0.35.
+
 El arco resultante, medido contra un matamoscas de 270 ms:
 
 | generación | reacción | despegue | total | ¿escapa? |

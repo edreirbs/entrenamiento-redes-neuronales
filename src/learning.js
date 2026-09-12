@@ -74,7 +74,8 @@ const GAIN_MIN = 0.60, GAIN_MAX = 2.20;
 
 
 // Tiempo entre el disparo de la neurona gigante y despejar la zona de impacto.
-const DESPEGUE_LARGO = 105, DESPEGUE_CORTO = 30;
+export const DESPEGUE_LARGO = 105;
+const DESPEGUE_CORTO = 30;
 
 /** Cuánto ha aprendido, 0..1. Es lo que dibuja la barra. */
 export function progreso(s) {
@@ -88,6 +89,37 @@ export function ganancia(s) {
 /** Milisegundos entre el disparo de DNp01 y salir de la zona de impacto. */
 export function despegue(s) {
   return DESPEGUE_LARGO + progreso(s) * (DESPEGUE_CORTO - DESPEGUE_LARGO);
+}
+
+/**
+ * Habituación de corto plazo: el contragolpe del jugador.
+ *
+ * Golpes repetidos y seguidos deprimen las mismas sinapsis que la
+ * sensibilización refuerza, y la obligan a volver al despegue largo. Es el otro
+ * aprendizaje no asociativo clásico, y en el animal convive con el primero: uno
+ * sube la respuesta a largo plazo, el otro la agota en cuestión de segundos.
+ *
+ * No se guarda: se recupera sola en unos segundos de calma.
+ */
+export const FATIGA_POR_GOLPE = 0.30;
+// Corta a propósito: si durara más, hasta jugando con calma se acumularía y
+// la mosca nunca llegaría a estar realmente descansada.
+export const FATIGA_TAU = 1800;
+
+/** Con la vía agotada, la neurona gigante casi no empuja. */
+export function gananciaCon(s, fatiga) {
+  return ganancia(s) * (1 - 0.45 * fatiga);
+}
+
+/**
+ * Sin la neurona gigante metida, el despegue deja de ser explosivo: la mosca
+ * lo prepara con calma y sale tarde. Agotada del todo tarda más incluso que
+ * una sin experiencia.
+ */
+const DESPEGUE_AGOTADO = 104;
+export function despegueCon(s, fatiga) {
+  const corto = despegue(s);
+  return corto + fatiga * (DESPEGUE_AGOTADO - corto);
 }
 
 /** Sesgo aprendido: hacia dónde conviene saltar, dado de dónde suelen llegar. */

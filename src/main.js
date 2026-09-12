@@ -10,9 +10,9 @@
  */
 import {
   buildEscapeCircuit, retinaDrive, loomingFrame, GRID_W, GRID_H,
-} from './circuits.js';
-import { Arena, HOVER_Y, PAD_HALF, BOUNDS } from './scene3d.js';
-import * as Aprende from './learning.js';
+} from './circuits.js?v=5';
+import { Arena, HOVER_Y, PAD_HALF, BOUNDS } from './scene3d.js?v=5';
+import * as Aprende from './learning.js?v=5';
 
 const $ = (id) => document.getElementById(id);
 
@@ -34,14 +34,23 @@ fly.place(0.4, 0.2);
 
 let mem = Aprende.load();
 let aim = { x: 0, z: 0 };
+// Habituación de corto plazo. No se guarda: es el contragolpe del jugador y se
+// disipa sola en unos segundos.
+let fatiga = 0;
 let swing = null;                 // estado del golpe en curso
 let playing = false;
+let fallos = 0;                   // fallos seguidos, para soltar la pista a tiempo
 
 // ─── Bucle ────────────────────────────────────────────────────────────
 let last = performance.now();
 function loop(now) {
   const dt = Math.min(0.05, (now - last) / 1000);
   last = now;
+
+  if (fatiga > 0.001) {
+    fatiga *= Math.exp(-(dt * 1000) / Aprende.FATIGA_TAU);
+    pintaFatiga();
+  }
 
   if (swing) stepSwing(now);
   else arena.swatter.position.set(aim.x, HOVER_Y + Math.sin(now / 700) * 0.03, aim.z);
@@ -56,6 +65,9 @@ requestAnimationFrame(loop);
 // ─── El golpe ─────────────────────────────────────────────────────────
 function slam() {
   if (!playing || swing) return;
+  fatiga = Math.min(1, fatiga + Aprende.FATIGA_POR_GOLPE);
+  escape.setGain(Aprende.gananciaCon(mem, fatiga));
+  pintaFatiga();
   const lum = new Float32Array(P), prev = new Float32Array(P);
   const I = new Float32Array(escape.net.n);
   escape.net.reset();
@@ -64,7 +76,7 @@ function slam() {
     t0: performance.now(), simT: 0, x: aim.x, z: aim.z,
     reaction: null, clears: false, resolved: false,
     lum, prev, I,
-    despegue: Aprende.despegue(mem),
+    despegue: Aprende.despegueCon(mem, fatiga),
     flyAt: { x: fly.group.position.x, z: fly.group.position.z },
   };
   // Primer fotograma de referencia, con el matamoscas todavía arriba.
@@ -154,6 +166,7 @@ function resolve() {
   mem.swats += 1;
 
   if (muere) {
+    fallos = 0;
     fly.splat();
     mem.kills += 1;
     mem.gen += 1;
@@ -166,6 +179,10 @@ function resolve() {
     setTimeout(nuevaMosca, 1150);
   } else {
     mem.racha = 0;
+    fallos += 1;
+    if (fallos === 3 || fallos % 6 === 0) {
+      $('hint').innerHTML = 'Truco: <b>golpes seguidos la agotan</b>. Su vía de escape se habitúa y vuelve al despegue lento.';
+    }
     if (!escapo) {
       flash('ni cerca', 'miss');
       $('hint').innerHTML = 'Le pegaste lejos. La mira te dice dónde va a caer.';
@@ -191,7 +208,16 @@ function nuevaMosca() {
   $('hint').innerHTML = `Generación <b>${mem.gen}</b>. Lo que le hiciste a la anterior, esta ya lo trae.`;
 }
 
-function aplicaAprendizaje() { escape.setGain(Aprende.ganancia(mem)); }
+function aplicaAprendizaje() { escape.setGain(Aprende.gananciaCon(mem, fatiga)); }
+
+function pintaFatiga() {
+  $('fat').style.width = `${Math.round(fatiga * 100)}%`;
+  $('fatlab').textContent =
+    fatiga < 0.08 ? 'descansada'
+      : fatiga < 0.35 ? 'algo agotada'
+        : fatiga < 0.7 ? 'se le está agotando el escape'
+          : 'agotada: ahora sí';
+}
 
 function pintaHud(reaction) {
   $('kills').textContent = mem.kills;
@@ -342,7 +368,9 @@ const reiniciar = () => {
   mem = Aprende.reset();
   aplicaAprendizaje();
   $('react').textContent = '—';
+  fatiga = 0; fallos = 0;
   pintaHud(null);
+  pintaFatiga();
   pintaPanel();
   nuevaMosca();
   $('hint').innerHTML = 'Mosca nueva, sin nada aprendido. Generación 1.';
@@ -364,7 +392,8 @@ $('forget').onclick = () => { reiniciar(); $('about').close(); };
 
 aplicaAprendizaje();
 pintaHud(null);
+pintaFatiga();
 pintaPanel();
 intro();
 
-window.__dbg = { arena, escape, fly, mem: () => mem, slam };
+window.__dbg = { arena, escape, fly, mem: () => mem, slam, fatiga: () => fatiga };

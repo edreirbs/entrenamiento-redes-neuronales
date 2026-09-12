@@ -33,6 +33,8 @@ body {
 .react span { font-size: 10.5px; color: var(--dim); margin-left: 5px; }
 .bar { width: 132px; height: 4px; border-radius: 2px; background: #1d2028; margin: 9px 0 0 auto; overflow: hidden; }
 .bar i { display: block; height: 100%; width: 0; background: var(--fly); border-radius: 2px; transition: width .7s cubic-bezier(.2,.8,.3,1); }
+.bar.fat { margin-top: 6px; }
+.bar.fat i { background: #d9a441; transition: width .18s linear; }
 .barlab { font-size: 10px; color: #5d6478; margin-top: 5px; letter-spacing: .04em; }
 
 /* ─── Panel de aprendizaje ─── */

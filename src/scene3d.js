@@ -7,7 +7,7 @@
  * eso apuntar de lado también cambia lo que ella percibe.
  */
 import * as THREE from '../vendor/three.module.js';
-import { Fly3D } from './fly3d.js';
+import { Fly3D } from './fly3d.js?v=5';
 
 export const ACCENT = 0x2fe0c0;
 export const HOVER_Y = 1.55;
